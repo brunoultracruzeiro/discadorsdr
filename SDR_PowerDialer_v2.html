@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GFB — Power Dialer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080a0f;--bg2:#0c0f16;--panel:#0f1319;--panel2:#131820;
+  --border:#1a2232;--border2:#1f2a3d;
+  --green:#00e87a;--green-glow:rgba(0,232,122,.15);
+  --blue:#1d6fff;--blue2:#4d93ff;--orange:#ff8c00;
+  --red:#ff3355;--yellow:#ffd600;--purple:#8b5cf6;
+  --text:#e8f0fa;--text2:#7a94b0;--text3:#3d5470;
+  --mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
+
+.shell{display:grid;grid-template-columns:52px 232px 1fr 316px;height:100vh}
+
+/* NAV */
+.icon-nav{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px}
+.nav-logo{width:30px;height:30px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#000;margin-bottom:14px;box-shadow:0 0 16px var(--green-glow)}
+.nav-ico{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:.15s;color:var(--text3);position:relative}
+.nav-ico:hover{background:var(--panel2);color:var(--text2)}
+.nav-bottom{margin-top:auto}
+
+/* QUEUE */
+.queue-panel{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.qp-header{padding:14px 12px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.qp-title{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.qp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px}
+.qs{background:var(--panel2);border-radius:7px;padding:7px 5px;text-align:center;border:1px solid var(--border)}
+.qs-val{font-size:17px;font-weight:800;line-height:1}
+.qs-lbl{font-size:8px;color:var(--text3);letter-spacing:1px;margin-top:2px;font-family:var(--mono)}
+.qp-search{display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border2);border-radius:7px;padding:6px 10px}
+.qp-search input{background:transparent;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:11px;flex:1}
+.qp-search input::placeholder{color:var(--text3)}
+.queue-filters{display:flex;gap:4px;padding:9px 12px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.qf{padding:3px 9px;border-radius:20px;border:1px solid var(--border2);font-size:10px;font-weight:600;color:var(--text3);cursor:pointer;white-space:nowrap;transition:.15s}
+.qf:hover,.qf.active{border-color:var(--green);color:var(--green)}
+.qf.active{background:var(--green-glow)}
+.queue-list{flex:1;overflow-y:auto;padding:7px 9px}
+.lead-card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px;margin-bottom:5px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.lead-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border2);transition:.2s}
+.lead-card.active{border-color:rgba(0,232,122,.4);background:rgba(0,232,122,.04)}
+.lead-card.active::before{background:var(--green)}
+.lead-card.calling::before{background:var(--yellow);animation:pb 1s infinite}
+.lead-card.done{opacity:.55}.lead-card.done::before{background:var(--blue2)}
+@keyframes pb{0%,100%{opacity:1}50%{opacity:.3}}
+.lc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.lc-name{font-size:12px;font-weight:700}
+.lc-att{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:3px;background:var(--panel);border:1px solid var(--border);color:var(--text3)}
+.lc-att.hot{background:rgba(255,51,85,.1);border-color:rgba(255,51,85,.3);color:var(--red)}
+.lc-phone{font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:4px}
+.lc-stage{display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 7px;border-radius:20px;background:var(--panel);border:1px solid var(--border);color:var(--text3)}
+.lc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* MAIN */
+.main-area{background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+.main-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
+.mt-left{display:flex;align-items:center;gap:10px}
+.sdr-sel{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border2);border-radius:7px;padding:5px 9px;cursor:pointer}
+.sdr-av{width:20px;height:20px;border-radius:5px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800}
+.sdr-nm{font-size:11px;font-weight:600}
+.ss{display:flex;gap:10px}
+.ss-item{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.ss-item b{color:var(--text2)}
+.mt-right{display:flex;align-items:center;gap:7px}
+.tbtn{background:var(--panel);border:1px solid var(--border2);color:var(--text2);padding:5px 11px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.tbtn:hover{border-color:var(--green);color:var(--green)}
+
+/* Power Dialer toggle */
+.pd-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;transition:.2s;background:var(--panel)}
+.pd-pill.on{background:rgba(0,232,122,.08);border-color:var(--green)}
+.pd-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:.2s}
+.pd-pill.on .pd-dot{background:var(--green);box-shadow:0 0 6px var(--green-glow)}
+.pd-lbl{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text3);transition:.2s}
+.pd-pill.on .pd-lbl{color:var(--green)}
+
+/* EMPTY */
+.state-empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text3)}
+.state-empty-ico{font-size:42px;opacity:.3}
+.state-empty-ttl{font-size:16px;font-weight:700;color:var(--text2)}
+.state-empty-sub{font-size:12px;text-align:center;max-width:240px;line-height:1.6}
+.btn-start{background:var(--green);color:#000;border:none;padding:11px 22px;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 0 28px var(--green-glow);transition:.2s}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(0,232,122,.3)}
+
+/* CALL SCREEN */
+.call-screen{flex:1;display:flex;flex-direction:column;padding:16px 18px;gap:12px;overflow-y:auto}
+
+/* Lead hero */
+.lead-hero{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:14px;position:relative;overflow:hidden;flex-shrink:0}
+.lead-hero::after{content:'';position:absolute;top:-28px;right:-28px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,232,122,.07),transparent 70%)}
+.lh-name{font-size:21px;font-weight:800;margin-bottom:3px;line-height:1.1}
+.lh-co{font-size:12px;color:var(--text2);margin-bottom:10px}
+.lh-row{display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:4px}
+.lh-ico{width:22px;height:22px;border-radius:5px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.lh-val{font-weight:600}
+.lh-lbl{color:var(--text3);font-size:10px}
+.lh-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
+.att-box{background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;text-align:center}
+.att-num{font-size:22px;font-weight:900;font-family:var(--mono);color:var(--green);line-height:1}
+.att-lbl{font-size:8px;letter-spacing:1.5px;color:var(--text3);margin-top:1px}
+.lh-stg{font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid rgba(29,111,255,.4);color:var(--blue2);background:rgba(29,111,255,.08);font-family:var(--mono)}
+.rd-lnk{font-family:var(--mono);font-size:9px;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;cursor:pointer;transition:.15s}
+.rd-lnk:hover{color:var(--blue2);border-color:var(--blue2)}
+
+/* Controls */
+.call-controls{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;flex-shrink:0;overflow:hidden}
+.cc-idle,.cc-calling,.cc-ended{display:none;flex-direction:column;gap:9px}
+.big-call-btn{background:var(--green);color:#000;border:none;padding:13px;border-radius:10px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 32px var(--green-glow);transition:.2s}
+.big-call-btn:hover{transform:translateY(-1px);box-shadow:0 0 48px rgba(0,232,122,.35)}
+.skip-row{display:flex;gap:6px}
+
+/* Calling state */
+.timer-bar{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border-radius:8px;padding:9px 13px}
+.timer-display{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--yellow)}
+.timer-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pb .8s infinite;flex-shrink:0}
+
+.result-hint{font-size:10px;text-align:center;color:var(--text3);font-family:var(--mono);padding:2px 0}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.result-btn{background:var(--panel2);border:1.5px solid var(--border2);color:var(--text2);padding:12px 8px;border-radius:9px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;text-align:center;line-height:1.4}
+.result-btn:hover{transform:translateY(-1px);background:var(--bg2)}
+.result-btn small{font-size:9px;opacity:.65;display:block;margin-top:2px}
+.r-agendou{border-color:var(--green)!important;background:rgba(0,232,122,.1)!important;color:var(--green)!important}
+.r-nao{border-color:var(--yellow)!important;background:rgba(255,214,0,.07)!important;color:var(--yellow)!important}
+.r-remarcar{border-color:var(--blue2)!important;background:rgba(77,147,255,.08)!important;color:var(--blue2)!important}
+.r-desq{border-color:var(--red)!important;background:rgba(255,51,85,.08)!important;color:var(--red)!important}
+.r-contato{border-color:var(--purple)!important;background:rgba(139,92,246,.08)!important;color:var(--purple)!important}
+.r-postal{border-color:var(--orange)!important;background:rgba(255,140,0,.08)!important;color:var(--orange)!important}
+.enc-btn{background:rgba(255,51,85,.07);border:1.5px solid rgba(255,51,85,.25);color:var(--red);padding:9px;border-radius:8px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.enc-btn:hover{background:rgba(255,51,85,.16)}
+
+/* Ended (manual mode) */
+.ended-sum{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--panel2);border-radius:8px}
+.ended-act{display:flex;gap:6px}
+.btn-nxt{flex:1;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border:none;padding:10px;border-radius:8px;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer;transition:.2s}
+.btn-nxt:hover{opacity:.9}
+.btn-recall{background:var(--panel2);border:1px solid var(--border2);color:var(--text2);padding:10px 14px;border-radius:8px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-recall:hover{border-color:var(--green);color:var(--green)}
+
+/* COUNTDOWN OVERLAY */
+.cd-overlay{position:absolute;inset:0;background:rgba(8,10,15,.96);border-radius:12px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:20;backdrop-filter:blur(3px)}
+.cd-badge{font-size:11px;font-weight:700;padding:4px 13px;border-radius:20px;border:1px solid;font-family:var(--mono)}
+.cd-lbl{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono)}
+.cd-num{font-size:76px;font-weight:900;font-family:var(--mono);color:var(--green);line-height:1;animation:cdp 1s ease infinite}
+@keyframes cdp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.07);opacity:.65}}
+.cd-next{background:var(--panel2);border:1px solid var(--border2);border-radius:9px;padding:9px 16px;text-align:center;min-width:190px}
+.cd-next-lbl{font-size:8px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-family:var(--mono);margin-bottom:3px}
+.cd-next-name{font-size:14px;font-weight:800}
+.cd-next-co{font-size:10px;color:var(--text2);margin-top:1px}
+.cd-cancel{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:6px 16px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.cd-cancel:hover{border-color:var(--red);color:var(--red)}
+
+/* KANBAN SIDEBAR */
+.kanban-side{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.ks-hdr{padding:13px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ks-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.ks-ttl{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.ks-sync{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.ks-tabs{display:flex}
+.ks-tab{flex:1;padding:6px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:var(--mono)}
+.ks-tab.active{color:var(--green);border-bottom-color:var(--green)}
+.ks-tab:hover:not(.active){color:var(--text2)}
+.ks-body{flex:1;overflow-y:auto;padding:9px}
+
+/* Pipeline */
+.ks-stage{background:var(--panel2);border:1px solid var(--border);border-left:3px solid transparent;border-radius:7px;margin-bottom:6px;overflow:hidden}
+.ks-st-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 9px}
+.ks-st-name{font-size:10px;font-weight:700}
+.ks-badge{font-family:var(--mono);font-size:9px;padding:1px 7px;border-radius:4px;font-weight:700}
+.ks-cards{padding:0 6px 6px}
+.ks-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:6px 8px;margin-bottom:3px;cursor:pointer;transition:.15s}
+.ks-card:hover{border-color:var(--border2)}
+.ks-card-name{font-size:11px;font-weight:700;margin-bottom:1px}
+.ks-card-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.ks-empty-st{font-size:10px;color:var(--text3);text-align:center;padding:5px 8px 8px}
+.ks-more{font-size:9px;color:var(--text3);text-align:center;padding:3px;font-family:var(--mono)}
+
+/* History sidebar */
+.ks-hist{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 9px;margin-bottom:5px}
+.ks-hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.ks-hist-name{font-size:11px;font-weight:700}
+.ks-hist-result{font-size:10px;font-weight:700;font-family:var(--mono)}
+.ks-hist-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* Modals */
+.modal-bg{display:none;position:fixed;inset:0;z-index:500;background:rgba(8,10,15,.87);backdrop-filter:blur(8px);align-items:center;justify-content:center}
+.modal-bg.on{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:15px;padding:24px;width:420px;max-width:90vw}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.fg{margin-bottom:11px}
+.flbl{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:5px}
+.fi{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:.15s}
+.fi:focus{border-color:var(--green)}
+.modal-btn{width:100%;background:var(--green);color:#000;border:none;padding:10px;border-radius:8px;font-family:var(--sans);font-weight:800;font-size:13px;cursor:pointer;margin-top:3px}
+.modal-cancel{width:100%;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px;border-radius:8px;font-family:var(--sans);font-weight:600;font-size:12px;cursor:pointer;margin-top:6px}
+
+/* Toast */
+.toast{position:fixed;bottom:18px;right:18px;z-index:999;background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:8px 15px;font-size:12px;font-weight:600;opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none}
+.toast.on{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:rgba(0,232,122,.4);color:var(--green)}
+.toast.err{border-color:rgba(255,51,85,.4);color:var(--red)}
+
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.call-screen>*{animation:fu .24s ease both}
+.call-screen>*:nth-child(1){animation-delay:.04s}
+.call-screen>*:nth-child(2){animation-delay:.09s}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- NAV -->
+<div class="icon-nav">
+  <div class="nav-logo">G</div>
+  <div class="nav-ico" onclick="openSettings()" title="Configurações">⚙</div>
+  <div class="nav-ico" onclick="openAddLead()" title="Adicionar Lead">＋</div>
+  <div class="nav-ico" onclick="syncRD()" title="Sync RD Station">↺</div>
+  <div class="nav-ico nav-bottom" onclick="resetQueue()" title="Resetar Fila">⟳</div>
+</div>
+
+<!-- QUEUE -->
+<div class="queue-panel">
+  <div class="qp-header">
+    <div class="qp-title">Fila de Ligações</div>
+    <div class="qp-stats">
+      <div class="qs"><div class="qs-val" id="stat-total">0</div><div class="qs-lbl">TOTAL</div></div>
+      <div class="qs"><div class="qs-val" style="color:var(--green)" id="stat-done">0</div><div class="qs-lbl">FEITAS</div></div>
+      <div class="qs"><div class="qs-val" style="color:var(--yellow)" id="stat-pend">0</div><div class="qs-lbl">FILA</div></div>
+    </div>
+    <div class="qp-search">
+      <span style="color:var(--text3);font-size:12px">🔍</span>
+      <input type="text" placeholder="Buscar lead..." id="search-input" oninput="filterLeads()">
+    </div>
+  </div>
+  <div class="queue-filters">
+    <div class="qf active" onclick="setFilter('all',this)">Todos</div>
+    <div class="qf" onclick="setFilter('fila',this)">Fila</div>
+    <div class="qf" onclick="setFilter('remarcar',this)">Remarcar</div>
+    <div class="qf" onclick="setFilter('agendado',this)">Agendados</div>
+  </div>
+  <div class="queue-list" id="queue-list"></div>
+</div>
+
+<!-- MAIN -->
+<div class="main-area">
+  <div class="main-topbar">
+    <div class="mt-left">
+      <div class="sdr-sel" onclick="openSettings()">
+        <div class="sdr-av" id="sdr-av">?</div>
+        <div class="sdr-nm" id="sdr-nm">Configure o SDR</div>
+        <span style="color:var(--text3);font-size:9px">▾</span>
+      </div>
+      <div class="ss">
+        <div class="ss-item">📞 <b id="ss-calls">0</b></div>
+        <div class="ss-item">⏱ <b id="ss-time">00:00</b></div>
+        <div class="ss-item">📅 <b id="ss-sched">0</b> agend</div>
+      </div>
+    </div>
+    <div class="mt-right">
+      <div class="pd-pill on" id="pd-pill" onclick="togglePD()" title="Power Dialer Automático">
+        <div class="pd-dot"></div>
+        <div class="pd-lbl" id="pd-lbl">⚡ AUTO</div>
+      </div>
+      <button class="tbtn" onclick="startAutoQueue()">▶ Iniciar Fila</button>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    <!-- Empty -->
+    <div class="state-empty" id="state-empty">
+      <div class="state-empty-ico">📞</div>
+      <div class="state-empty-ttl">Fila pronta</div>
+      <div class="state-empty-sub">Clique em "Iniciar Fila" para começar a discagem automática.</div>
+      <button class="btn-start" onclick="startAutoQueue()">▶ Iniciar Fila Automática</button>
+    </div>
+
+    <!-- Call screen -->
+    <div class="call-screen" id="call-screen" style="display:none">
+
+      <!-- Lead hero -->
+      <div class="lead-hero">
+        <div>
+          <div class="lh-name" id="ch-name">—</div>
+          <div class="lh-co" id="ch-co">—</div>
+          <div class="lh-row"><div class="lh-ico">📱</div><span class="lh-val" id="ch-phone">—</span><span class="lh-lbl">celular</span></div>
+          <div style="margin-top:8px"><span class="lh-stg" id="ch-stg">—</span></div>
+        </div>
+        <div class="lh-right">
+          <div class="att-box">
+            <div class="att-num" id="ch-att">1</div>
+            <div class="att-lbl">TENTATIVA</div>
+          </div>
+          <a class="rd-lnk" id="ch-rd" href="#" target="_blank">🔗 RD Station</a>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="call-controls" id="call-controls">
+
+        <!-- COUNTDOWN OVERLAY -->
+        <div class="cd-overlay" id="cd-overlay">
+          <div class="cd-badge" id="cd-badge">—</div>
+          <div class="cd-lbl">próxima ligação em</div>
+          <div class="cd-num" id="cd-num">3</div>
+          <div class="cd-next">
+            <div class="cd-next-lbl">Próximo lead</div>
+            <div class="cd-next-name" id="cd-next-name">—</div>
+            <div class="cd-next-co" id="cd-next-co">—</div>
+          </div>
+          <button class="cd-cancel" onclick="cancelCountdown()">✕ Cancelar auto-avanço</button>
+        </div>
+
+        <!-- IDLE -->
+        <div class="cc-idle" id="cc-idle">
+          <button class="big-call-btn" onclick="startCall()">
+            <span style="font-size:18px">📞</span>
+            <span>Ligar — <span id="cc-prev" style="font-family:var(--mono)">—</span></span>
+          </button>
+          <div class="skip-row">
+            <button class="tbtn" style="flex:1;padding:6px" onclick="skipLead()">⏭ Pular</button>
+            <button class="tbtn" style="flex:1;padding:6px" onclick="markNoPhone()">📵 Sem tel.</button>
+          </div>
+        </div>
+
+        <!-- CALLING -->
+        <div class="cc-calling" id="cc-calling">
+          <div class="timer-bar">
+            <div>
+              <div class="timer-display" id="timer-display">00:00</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px">duração</div>
+            </div>
+            <div style="text-align:right">
+              <div class="timer-status"><div class="live-dot"></div>Em ligação</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px" id="call-phone">—</div>
+            </div>
+          </div>
+          <div class="result-hint">👇 Toque no resultado para encerrar e avançar automaticamente</div>
+          <div class="result-grid">
+            <button class="result-btn" onclick="endWithResult('Agendou','r-agendou',this)">📅 Agendou<small>Reunião marcada</small></button>
+            <button class="result-btn" onclick="endWithResult('Não Atendeu','r-nao',this)">❌ Não Atendeu<small>Sem resposta</small></button>
+            <button class="result-btn" onclick="endWithResult('Remarcar','r-remarcar',this)">🔄 Remarcar<small>Ligar de novo</small></button>
+            <button class="result-btn" onclick="endWithResult('Desqualificado','r-desq',this)">🚫 Desqualificado<small>Fora do perfil</small></button>
+            <button class="result-btn" onclick="endWithResult('Contato Feito','r-contato',this)">✅ Contato Feito<small>Falou, sem ag.</small></button>
+            <button class="result-btn" onclick="endWithResult('Caixa Postal','r-postal',this)">📬 Caixa Postal<small>Voicemail</small></button>
+          </div>
+          <button class="enc-btn" onclick="endNoResult()">⏹ Encerrar sem resultado</button>
+        </div>
+
+        <!-- ENDED (manual) -->
+        <div class="cc-ended" id="cc-ended">
+          <div class="ended-sum">
+            <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Resultado</div><div style="font-size:14px;font-weight:700" id="ended-res">—</div></div>
+            <div style="text-align:right"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Duração</div><div style="font-family:var(--mono);font-size:13px;font-weight:700" id="ended-dur">—</div></div>
+          </div>
+          <div class="ended-act">
+            <button class="btn-nxt" onclick="nextLead()">▶ Próximo Lead</button>
+            <button class="btn-recall" onclick="reCall()">↩ Religar</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KANBAN SIDEBAR -->
+<div class="kanban-side">
+  <div class="ks-hdr">
+    <div class="ks-hdr-top">
+      <div class="ks-ttl">Pipeline GFB</div>
+      <div class="ks-sync" id="ks-sync">—</div>
+    </div>
+    <div class="ks-tabs">
+      <div class="ks-tab active" onclick="setKsTab('pipeline',this)">Kanban</div>
+      <div class="ks-tab" onclick="setKsTab('historico',this)">Histórico</div>
+    </div>
+  </div>
+  <div class="ks-body" id="ks-pipe"></div>
+  <div class="ks-body" id="ks-hist" style="display:none"></div>
+</div>
+
+</div><!-- shell -->
+
+<!-- CONFIG MODAL -->
+<div class="modal-bg" id="cfg-modal">
+  <div class="modal">
+    <div class="modal-title">⚙ Configurações</div>
+    <div class="modal-sub">SDR e integrações</div>
+    <div class="fg"><label class="flbl">Seu Nome (SDR)</label><input type="text" class="fi" id="cfg-name" placeholder="Ex: Ana Lima"></div>
+    <div class="fg"><label class="flbl">Token RD Station CRM</label><input type="password" class="fi" id="cfg-rd" placeholder="Token pessoal RD Station"></div>
+    <div class="fg"><label class="flbl">Pipeline ID (RD Station)</label><input type="text" class="fi" id="cfg-pipe" placeholder="694aabf03f1ed8001d44a46b"></div>
+    <div class="fg"><label class="flbl">Delay Auto-Avanço (segundos)</label><input type="number" class="fi" id="cfg-delay" min="1" max="10" placeholder="3"></div>
+    <button class="modal-btn" onclick="saveCfg()">💾 Salvar</button>
+    <button class="modal-cancel" onclick="closeCfg()">Cancelar</button>
+  </div>
+</div>
+
+<!-- ADD LEAD MODAL -->
+<div class="modal-bg" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">＋ Adicionar Lead</div>
+    <div class="modal-sub">Lead manual na fila</div>
+    <div class="fg"><label class="flbl">Nome</label><input type="text" class="fi" id="al-name" placeholder="Nome completo"></div>
+    <div class="fg"><label class="flbl">Telefone</label><input type="text" class="fi" id="al-phone" placeholder="5511999999999"></div>
+    <div class="fg"><label class="flbl">Academia / Empresa</label><input type="text" class="fi" id="al-co" placeholder="Nome da academia"></div>
+    <div class="fg">
+      <label class="flbl">Etapa</label>
+      <select class="fi" id="al-stg">
+        <option value="Sem Contato/Lead">Sem Contato/Lead</option>
+        <option value="Entrar em Contato">Entrar em Contato</option>
+        <option value="Remarcar Reunião">Remarcar Reunião</option>
+        <option value="Contato Feito">Contato Feito</option>
+      </select>
+    </div>
+    <button class="modal-btn" onclick="addLead()">Adicionar à Fila</button>
+    <button class="modal-cancel" onclick="closeAdd()">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ STATE ══
+const LS={get:(k,d='')=>{try{return localStorage.getItem('gfb_'+k)||d}catch{return d}},set:(k,v)=>{try{localStorage.setItem('gfb_'+k,v)}catch{}}};
+
+let cfg={
+  name:LS.get('sdr_name'),
+  rdToken:LS.get('rd_token'),
+  pipeId:LS.get('pipe_id','694aabf03f1ed8001d44a46b'),
+  delay:parseInt(LS.get('delay','3'))||3
+};
+
+let leads=JSON.parse(LS.get('leads','[]'));
+let history=JSON.parse(LS.get('history','[]'));
+let curFilter='all';
+let curIdx=-1;
+let callState='idle';
+let timerInt=null;
+let sessInt=null;
+let callStart=null;
+let sessStart=Date.now();
+let sessCalls=0;
+let sessSched=0;
+let selResult='';
+let powerDialer=true;
+let cdInt=null;
+let lastDur=0;
+
+const STAGE_COLORS={
+  'Sem Contato/Lead':'#7a94b0','Contato Feito':'#4d93ff',
+  'Reunião Agendada':'#00e87a','Remarcar Reunião':'#ffd600',
+  'Entrar em Contato':'#ff8c00','Em Negociação':'#8b5cf6','Acompanhamento':'#ff3355'
+};
+const STAGES=['Sem Contato/Lead','Contato Feito','Reunião Agendada','Remarcar Reunião','Entrar em Contato','Em Negociação','Acompanhamento'];
+const RESULT_COLORS={'Agendou':'var(--green)','Não Atendeu':'var(--yellow)','Remarcar':'var(--blue2)','Desqualificado':'var(--red)','Contato Feito':'var(--purple)','Caixa Postal':'var(--orange)'};
+
+// ══ DEMO ══
+function loadDemo(){
+  if(leads.length)return;
+  leads=[
+    {id:'1',name:'Pedro Roque',company:'Academia FitPower',phone:'5511987654321',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d1',notes:''},
+    {id:'2',name:'José Lucas Pereira',company:'Studio Corpo & Alma',phone:'5511976543210',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d2',notes:''},
+    {id:'3',name:'Tiago Mendes',company:'CrossFit Norte',phone:'5511965432109',stage:'Remarcar Reunião',attempts:2,called:false,dealId:'d3',notes:'Remarcar 26/05'},
+    {id:'4',name:'Camila Ferreira',company:'Pilates Premium',phone:'5511943210987',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d4',notes:''},
+    {id:'5',name:'Matheus Paraíso',company:'Academia Central',phone:'5511932109876',stage:'Entrar em Contato',attempts:1,called:false,dealId:'d5',notes:''},
+    {id:'6',name:'Cláudio Cruz',company:'Box Training SP',phone:'5511921098765',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d6',notes:''},
+    {id:'7',name:'Fernando Lopes',company:'Gym & Health Club',phone:'5511910987654',stage:'Em Negociação',attempts:3,called:false,dealId:'d7',notes:'Proposta enviada'},
+    {id:'8',name:'Thyago Santos',company:'FitLife Academia',phone:'5511909876543',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d8',notes:''},
+    {id:'9',name:'Luan Carvalho',company:'Move Fitness',phone:'5511898765432',stage:'Contato Feito',attempts:1,called:false,dealId:'d9',notes:''},
+    {id:'10',name:'Renata Oliveira',company:'Studio Zen',phone:'5511887654321',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d10',notes:''},
+  ];
+  saveLeads();
+}
+function saveLeads(){LS.set('leads',JSON.stringify(leads));}
+
+// ══ QUEUE RENDER ══
+function getFiltered(){
+  const q=document.getElementById('search-input').value.toLowerCase();
+  return leads.filter(l=>{
+    const ok=!q||l.name.toLowerCase().includes(q)||(l.company||'').toLowerCase().includes(q);
+    if(!ok)return false;
+    if(curFilter==='all')return true;
+    if(curFilter==='fila')return !l.called;
+    if(curFilter==='remarcar')return l.stage==='Remarcar Reunião';
+    if(curFilter==='agendado')return l.stage==='Reunião Agendada';
+    return true;
+  });
+}
+function renderQueue(){
+  const list=document.getElementById('queue-list');
+  const fil=getFiltered();
+  const done=leads.filter(l=>l.called).length;
+  document.getElementById('stat-total').textContent=leads.length;
+  document.getElementById('stat-done').textContent=done;
+  document.getElementById('stat-pend').textContent=leads.length-done;
+  list.innerHTML=fil.map(l=>{
+    const c=STAGE_COLORS[l.stage]||'#7a94b0';
+    const gi=leads.indexOf(l);
+    const isA=gi===curIdx;
+    const isC=isA&&callState==='calling';
+    return `<div class="lead-card${isA?' active':''}${isC?' calling':''}${l.called&&!isA?' done':''}" onclick="selectLead(${gi})">
+      <div class="lc-top"><div class="lc-name">${l.name}</div><div class="lc-att${l.attempts>=3?' hot':''}">${l.attempts}x</div></div>
+      <div class="lc-phone">${l.phone?fmtPhone(l.phone):'⚠ sem telefone'}</div>
+      <div class="lc-stage"><div class="lc-dot" style="background:${c}"></div>${l.stage}</div>
+    </div>`;
+  }).join('');
+}
+function fmtPhone(p){
+  const c=p.replace(/\D/g,'');
+  if(c.length===13)return`+${c.slice(0,2)} (${c.slice(2,4)}) ${c.slice(4,9)}-${c.slice(9)}`;
+  if(c.length===11)return`(${c.slice(0,2)}) ${c.slice(2,7)}-${c.slice(7)}`;
+  return p;
+}
+
+// ══ LEAD SELECTION ══
+function selectLead(idx){
+  if(callState==='calling'){toast('Encerre a ligação atual primeiro','err');return;}
+  curIdx=idx;
+  const l=leads[idx];
+  document.getElementById('state-empty').style.display='none';
+  document.getElementById('call-screen').style.display='flex';
+  document.getElementById('ch-name').textContent=l.name;
+  document.getElementById('ch-co').textContent=l.company||'—';
+  document.getElementById('ch-stg').textContent=l.stage;
+  document.getElementById('ch-phone').textContent=l.phone?fmtPhone(l.phone):'Sem telefone';
+  document.getElementById('ch-att').textContent=l.attempts+1;
+  document.getElementById('ch-rd').href=l.dealId?`https://crm.rdstation.com/app/deals/${l.dealId}`:'#';
+  document.getElementById('cc-prev').textContent=l.phone?fmtPhone(l.phone):'sem número';
+  document.getElementById('call-phone').textContent=l.phone?fmtPhone(l.phone):'—';
+  setUI('idle');
+  selResult='';
+  document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');
+  renderQueue();
+}
+
+// ══ CALL FLOW ══
+function startCall(){
+  const l=leads[curIdx];
+  if(!l)return;
+  if(!l.phone){toast('Lead sem telefone','err');return;}
+  const a=document.createElement('a');
+  a.href='tel:'+l.phone.replace(/\D/g,'');
+  a.style.display='none';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>document.body.removeChild(a),500);
+  callState='calling';callStart=Date.now();
+  l.attempts++;saveLeads();
+  setUI('calling');startTimer();renderQueue();
+  toast('📞 Discando...','ok');
+}
+
+// 1-CLICK: resultado + encerra + auto-avança
+function endWithResult(label,cls,btn){
+  if(callState!=='calling')return;
+  selResult=label;
+  document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');
+  btn.className='result-btn '+cls;
+  finalizeCall(label);
+}
+
+function endNoResult(){
+  if(callState!=='calling')return;
+  selResult='';
+  finalizeCall('');
+}
+
+function finalizeCall(label){
+  callState='ended';
+  stopTimer();
+  const dur=Math.floor((Date.now()-callStart)/1000);
+  lastDur=dur;
+  const l=leads[curIdx];
+  l.called=true;
+  if(label)updateStage(curIdx,label);
+  saveLeads();
+  sessCalls++;document.getElementById('ss-calls').textContent=sessCalls;
+  if(label==='Agendou'){sessSched++;document.getElementById('ss-sched').textContent=sessSched;}
+  history.unshift({id:Date.now(),leadName:l.name,company:l.company||'',result:label||'Sem resultado',duration:fmtTime(dur),time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
+  if(history.length>100)history.pop();
+  LS.set('history',JSON.stringify(history));
+  renderQueue();renderKanban();renderHist();
+  if(powerDialer&&label){startCountdown(label);}
+  else{document.getElementById('ended-res').textContent=label||'—';document.getElementById('ended-dur').textContent=fmtTime(dur);setUI('ended');}
+}
+
+function updateStage(idx,result){
+  const l=leads[idx];if(!l)return;
+  const m={'Agendou':'Reunião Agendada','Remarcar':'Remarcar Reunião','Contato Feito':'Contato Feito','Desqualificado':'Acompanhamento','Caixa Postal':'Entrar em Contato'};
+  if(m[result])l.stage=m[result];
+  else if(result==='Não Atendeu'&&l.stage==='Sem Contato/Lead')l.stage='Entrar em Contato';
+}
+
+function setUI(state){
+  document.getElementById('cc-idle').style.display=state==='idle'?'flex':'none';
+  document.getElementById('cc-calling').style.display=state==='calling'?'flex':'none';
+  document.getElementById('cc-ended').style.display=state==='ended'?'flex':'none';
+}
+
+// ══ COUNTDOWN ══
+const BADGE_STYLES={
+  'Agendou':'color:var(--green);border-color:var(--green);background:rgba(0,232,122,.1)',
+  'Não Atendeu':'color:var(--yellow);border-color:var(--yellow);background:rgba(255,214,0,.07)',
+  'Remarcar':'color:var(--blue2);border-color:var(--blue2);background:rgba(77,147,255,.07)',
+  'Desqualificado':'color:var(--red);border-color:var(--red);background:rgba(255,51,85,.07)',
+  'Contato Feito':'color:var(--purple);border-color:var(--purple);background:rgba(139,92,246,.07)',
+  'Caixa Postal':'color:var(--orange);border-color:var(--orange);background:rgba(255,140,0,.07)'
+};
+
+function startCountdown(label){
+  let count=cfg.delay||3;
+  const ni=curIdx+1;
+  const nl=ni<leads.length?leads[ni]:null;
+  const badge=document.getElementById('cd-badge');
+  badge.textContent=label;
+  badge.style.cssText=BADGE_STYLES[label]||'color:var(--text2);border-color:var(--border2)';
+  document.getElementById('cd-num').textContent=count;
+  document.getElementById('cd-next-name').textContent=nl?nl.name:'✅ Fim da fila';
+  document.getElementById('cd-next-co').textContent=nl?(nl.company||''):'Todos concluídos!';
+  document.getElementById('cd-overlay').style.display='flex';
+  cdInt=setInterval(()=>{
+    count--;
+    document.getElementById('cd-num').textContent=count;
+    if(count<=0){clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';autoNext();}
+  },1000);
+}
+
+function cancelCountdown(){
+  clearInterval(cdInt);
+  document.getElementById('cd-overlay').style.display='none';
+  document.getElementById('ended-res').textContent=selResult||'—';
+  document.getElementById('ended-dur').textContent=fmtTime(lastDur);
+  setUI('ended');
+}
+
+function autoNext(){
+  const ni=curIdx+1;
+  if(ni<leads.length){callState='idle';selectLead(ni);setTimeout(()=>startCall(),500);}
+  else{callState='idle';curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('🎉 Fila concluída! '+sessCalls+' lig · '+sessSched+' agend','ok');}
+}
+
+// ══ NAVIGATION ══
+function nextLead(){
+  callState='idle';
+  const ni=curIdx+1;
+  if(ni<leads.length){selectLead(ni);}
+  else{curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('✅ Fila concluída!','ok');}
+}
+function reCall(){callState='idle';setUI('idle');selResult='';document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');}
+function skipLead(){if(callState==='calling'){toast('Encerre primeiro','err');return;}nextLead();toast('Lead pulado','ok');}
+function markNoPhone(){if(curIdx<0)return;leads[curIdx].notes='Sem telefone';saveLeads();nextLead();toast('Marcado sem telefone','ok');}
+function startAutoQueue(){const fi=leads.findIndex(l=>!l.called);if(fi<0){toast('Todos os leads foram contatados!','ok');return;}selectLead(fi);}
+function resetQueue(){if(!confirm('Resetar fila?'))return;leads.forEach(l=>{l.called=false;l.attempts=0;});saveLeads();renderQueue();renderKanban();toast('Fila resetada','ok');}
+
+// ══ POWER DIALER ══
+function togglePD(){
+  powerDialer=!powerDialer;
+  const el=document.getElementById('pd-pill');
+  document.getElementById('pd-lbl').textContent=powerDialer?'⚡ AUTO':'⏸ MANUAL';
+  powerDialer?el.classList.add('on'):el.classList.remove('on');
+  toast(powerDialer?'⚡ Auto-avanço ativado':'Modo manual','ok');
+}
+
+// ══ TIMER ══
+function startTimer(){timerInt=setInterval(()=>{const s=Math.floor((Date.now()-callStart)/1000);document.getElementById('timer-display').textContent=fmtTime(s);},1000);}
+function stopTimer(){clearInterval(timerInt);}
+function fmtTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function startSessTimer(){sessInt=setInterval(()=>{const s=Math.floor((Date.now()-sessStart)/1000);document.getElementById('ss-time').textContent=fmtTime(s);},1000);}
+
+// ══ KANBAN SIDEBAR ══
+function renderKanban(){
+  const body=document.getElementById('ks-pipe');
+  document.getElementById('ks-sync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  body.innerHTML=STAGES.map(stage=>{
+    const sl=leads.filter(l=>l.stage===stage);
+    const c=STAGE_COLORS[stage]||'#7a94b0';
+    return`<div class="ks-stage" style="border-left-color:${c}">
+      <div class="ks-st-hdr">
+        <span class="ks-st-name" style="color:${c}">${stage}</span>
+        <span class="ks-badge" style="background:${c}22;color:${c}">${sl.length}</span>
+      </div>
+      ${sl.length?`<div class="ks-cards">${sl.slice(0,6).map(l=>{
+        const gi=leads.indexOf(l);
+        const act=gi===curIdx;
+        return`<div class="ks-card" style="${act?'border-color:var(--green);background:rgba(0,232,122,.05)':''}" onclick="selectLead(${gi})">
+          <div class="ks-card-name">${l.name}</div>
+          <div class="ks-card-meta">${l.company||'—'} · ${l.attempts}x</div>
+        </div>`;
+      }).join('')}${sl.length>6?`<div class="ks-more">+${sl.length-6} mais</div>`:''}</div>`:`<div class="ks-empty-st">Vazio</div>`}
+    </div>`;
+  }).join('');
+}
+
+function renderHist(){
+  const body=document.getElementById('ks-hist');
+  if(!history.length){body.innerHTML='<div style="font-size:11px;color:var(--text3);text-align:center;padding:20px">Nenhuma ligação ainda</div>';return;}
+  body.innerHTML=history.slice(0,20).map(h=>{
+    const c=RESULT_COLORS[h.result]||'var(--text3)';
+    return`<div class="ks-hist">
+      <div class="ks-hist-top"><span class="ks-hist-name">${h.leadName}</span><span class="ks-hist-result" style="color:${c}">${h.result}</span></div>
+      <div class="ks-hist-meta">${h.time} · ${h.duration}${h.company?' · '+h.company:''}</div>
+    </div>`;
+  }).join('');
+}
+
+function setKsTab(tab,el){
+  document.getElementById('ks-pipe').style.display=tab==='pipeline'?'block':'none';
+  document.getElementById('ks-hist').style.display=tab==='historico'?'block':'none';
+  document.querySelectorAll('.ks-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ══ RD SYNC ══
+async function syncRD(){
+  if(!cfg.rdToken){toast('Configure o token do RD Station','err');openSettings();return;}
+  toast('Sincronizando...','ok');
+  try{
+    const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'rd',payload:{endpoint:`deals?deal_pipeline_id=${cfg.pipeId}&limit=50`,method:'GET'},token:cfg.rdToken})});
+    const data=await res.json();
+    const deals=data.deals||[];
+    if(!deals.length){toast('Nenhum deal encontrado','err');return;}
+    leads=deals.map(d=>({id:d._id||d.id,name:d.contacts?.[0]?.name||d.name||'Lead',company:d.organization?.name||'',phone:d.contacts?.[0]?.phones?.[0]?.phone||'',stage:d.deal_stage?.name||'Sem Contato/Lead',attempts:0,called:false,dealId:d._id||d.id,notes:d.last_activity_type||''}));
+    saveLeads();renderQueue();renderKanban();
+    toast(`✅ ${leads.length} leads sincronizados!`,'ok');
+  }catch(e){toast('Erro: '+e.message,'err');}
+}
+
+// ══ SETTINGS ══
+function openSettings(){document.getElementById('cfg-name').value=cfg.name;document.getElementById('cfg-rd').value=cfg.rdToken;document.getElementById('cfg-pipe').value=cfg.pipeId;document.getElementById('cfg-delay').value=cfg.delay;document.getElementById('cfg-modal').classList.add('on');}
+function closeCfg(){document.getElementById('cfg-modal').classList.remove('on');}
+function saveCfg(){
+  cfg.name=document.getElementById('cfg-name').value;
+  cfg.rdToken=document.getElementById('cfg-rd').value;
+  cfg.pipeId=document.getElementById('cfg-pipe').value;
+  cfg.delay=parseInt(document.getElementById('cfg-delay').value)||3;
+  LS.set('sdr_name',cfg.name);LS.set('rd_token',cfg.rdToken);LS.set('pipe_id',cfg.pipeId);LS.set('delay',cfg.delay);
+  updateSDR();closeCfg();toast('✅ Salvo!','ok');
+}
+function updateSDR(){
+  const n=cfg.name||'Configure o SDR';
+  document.getElementById('sdr-nm').textContent=n;
+  document.getElementById('sdr-av').textContent=n?n[0].toUpperCase():'?';
+}
+
+// ══ ADD LEAD ══
+function openAddLead(){document.getElementById('add-modal').classList.add('on');}
+function closeAdd(){document.getElementById('add-modal').classList.remove('on');}
+function addLead(){
+  const name=document.getElementById('al-name').value.trim();
+  const phone=document.getElementById('al-phone').value.trim();
+  if(!name){toast('Informe o nome','err');return;}
+  leads.push({id:'m'+Date.now(),name,phone,company:document.getElementById('al-co').value.trim(),stage:document.getElementById('al-stg').value,attempts:0,called:false,dealId:null,notes:''});
+  saveLeads();renderQueue();renderKanban();closeAdd();toast('Lead adicionado!','ok');
+  ['al-name','al-phone','al-co'].forEach(i=>document.getElementById(i).value='');
+}
+
+// ══ FILTER ══
+function filterLeads(){renderQueue();}
+function setFilter(f,el){curFilter=f;document.querySelectorAll('.qf').forEach(q=>q.classList.remove('active'));el.classList.add('active');renderQueue();}
+
+// ══ TOAST ══
+function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' on';setTimeout(()=>t.classList.remove('on'),3000);}
+
+// ══ INIT ══
+window.onload=()=>{
+  loadDemo();updateSDR();renderQueue();renderKanban();renderHist();startSessTimer();
+  if(!cfg.name)setTimeout(openSettings,800);
+};
+</script>
+</body>
+</html>
