@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GFB — Power Dialer</title>
+<title>GFB — Power Dialer + PABX</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -19,13 +19,12 @@
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
 body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
-
 .shell{display:grid;grid-template-columns:52px 232px 1fr 316px;height:100vh}
 
 /* NAV */
 .icon-nav{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px}
 .nav-logo{width:30px;height:30px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#000;margin-bottom:14px;box-shadow:0 0 16px var(--green-glow)}
-.nav-ico{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:.15s;color:var(--text3);position:relative}
+.nav-ico{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:.15s;color:var(--text3)}
 .nav-ico:hover{background:var(--panel2);color:var(--text2)}
 .nav-bottom{margin-top:auto}
 
@@ -62,36 +61,57 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 
 /* MAIN */
 .main-area{background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
-.main-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
-.mt-left{display:flex;align-items:center;gap:10px}
-.sdr-sel{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border2);border-radius:7px;padding:5px 9px;cursor:pointer}
+.main-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2);gap:8px}
+.mt-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.sdr-sel{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border2);border-radius:7px;padding:5px 9px;cursor:pointer;flex-shrink:0}
 .sdr-av{width:20px;height:20px;border-radius:5px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800}
 .sdr-nm{font-size:11px;font-weight:600}
-.ss{display:flex;gap:10px}
+.ss{display:flex;gap:10px;flex-shrink:0}
 .ss-item{font-family:var(--mono);font-size:10px;color:var(--text3)}
 .ss-item b{color:var(--text2)}
-.mt-right{display:flex;align-items:center;gap:7px}
-.tbtn{background:var(--panel);border:1px solid var(--border2);color:var(--text2);padding:5px 11px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.mt-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.tbtn{background:var(--panel);border:1px solid var(--border2);color:var(--text2);padding:5px 11px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
 .tbtn:hover{border-color:var(--green);color:var(--green)}
 
-/* Power Dialer toggle */
-.pd-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;transition:.2s;background:var(--panel)}
-.pd-pill.on{background:rgba(0,232,122,.08);border-color:var(--green)}
-.pd-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:.2s}
-.pd-pill.on .pd-dot{background:var(--green);box-shadow:0 0 6px var(--green-glow)}
-.pd-lbl{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text3);transition:.2s}
-.pd-pill.on .pd-lbl{color:var(--green)}
+/* Pills */
+.pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;transition:.2s;background:var(--panel);white-space:nowrap}
+.pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:.3s}
+.pill-lbl{font-family:var(--mono);font-size:10px;font-weight:700;transition:.2s;color:var(--text3)}
+/* PABX pill states */
+.pill.pabx-ok{border-color:var(--green);background:rgba(0,232,122,.07)}
+.pill.pabx-ok .pill-dot{background:var(--green);box-shadow:0 0 6px var(--green-glow)}
+.pill.pabx-ok .pill-lbl{color:var(--green)}
+.pill.pabx-err{border-color:rgba(255,51,85,.4);background:rgba(255,51,85,.05)}
+.pill.pabx-err .pill-dot{background:var(--red)}
+.pill.pabx-err .pill-lbl{color:var(--red)}
+.pill.pabx-calling .pill-dot{background:var(--yellow);animation:pb .7s infinite}
+.pill.pabx-calling .pill-lbl{color:var(--yellow)}
+.pill.pabx-connecting .pill-dot{background:var(--orange);animation:pb .4s infinite}
+.pill.pabx-connecting .pill-lbl{color:var(--orange)}
+/* AUTO pill */
+.pill.auto-on{border-color:var(--green);background:rgba(0,232,122,.07)}
+.pill.auto-on .pill-dot{background:var(--green);box-shadow:0 0 5px var(--green-glow)}
+.pill.auto-on .pill-lbl{color:var(--green)}
+
+/* CORS ALERT BANNER */
+.cors-banner{background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.3);border-radius:9px;padding:12px 16px;margin:14px 18px;display:none}
+.cors-banner-title{font-size:12px;font-weight:800;color:var(--orange);margin-bottom:4px}
+.cors-banner-text{font-size:11px;color:var(--text2);line-height:1.6}
+.cors-banner code{background:var(--panel2);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:10px;color:var(--yellow)}
+.cors-banner-btns{display:flex;gap:7px;margin-top:10px}
+.cors-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid;transition:.15s;font-family:var(--sans)}
+.cors-btn-copy{border-color:rgba(255,140,0,.5);color:var(--orange);background:rgba(255,140,0,.08)}
+.cors-btn-copy:hover{background:rgba(255,140,0,.18)}
+.cors-btn-skip{border-color:var(--border2);color:var(--text3);background:transparent}
+.cors-btn-skip:hover{border-color:var(--text2);color:var(--text2)}
 
 /* EMPTY */
 .state-empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text3)}
-.state-empty-ico{font-size:42px;opacity:.3}
-.state-empty-ttl{font-size:16px;font-weight:700;color:var(--text2)}
-.state-empty-sub{font-size:12px;text-align:center;max-width:240px;line-height:1.6}
 .btn-start{background:var(--green);color:#000;border:none;padding:11px 22px;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 0 28px var(--green-glow);transition:.2s}
 .btn-start:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(0,232,122,.3)}
 
 /* CALL SCREEN */
-.call-screen{flex:1;display:flex;flex-direction:column;padding:16px 18px;gap:12px;overflow-y:auto}
+.call-screen{flex:1;display:flex;flex-direction:column;padding:14px 18px;gap:11px;overflow-y:auto}
 
 /* Lead hero */
 .lead-hero{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:14px;position:relative;overflow:hidden;flex-shrink:0}
@@ -107,27 +127,46 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .att-num{font-size:22px;font-weight:900;font-family:var(--mono);color:var(--green);line-height:1}
 .att-lbl{font-size:8px;letter-spacing:1.5px;color:var(--text3);margin-top:1px}
 .lh-stg{font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid rgba(29,111,255,.4);color:var(--blue2);background:rgba(29,111,255,.08);font-family:var(--mono)}
-.rd-lnk{font-family:var(--mono);font-size:9px;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;cursor:pointer;transition:.15s}
+.rd-lnk{font-family:var(--mono);font-size:9px;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;transition:.15s}
 .rd-lnk:hover{color:var(--blue2);border-color:var(--blue2)}
 
 /* Controls */
 .call-controls{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;flex-shrink:0;overflow:hidden}
 .cc-idle,.cc-calling,.cc-ended{display:none;flex-direction:column;gap:9px}
+
+/* PABX bar */
+.pabx-bar{display:flex;align-items:center;justify-content:space-between;border-radius:8px;padding:8px 13px;transition:.3s}
+.pabx-bar.bar-dialing{background:rgba(255,140,0,.07);border:1px solid rgba(255,140,0,.2)}
+.pabx-bar.bar-calling{background:rgba(0,232,122,.06);border:1px solid rgba(0,232,122,.2)}
+.pabx-bar.bar-err{background:rgba(255,51,85,.05);border:1px solid rgba(255,51,85,.15)}
+.pabx-bar.bar-tel{background:rgba(77,147,255,.06);border:1px solid rgba(77,147,255,.2)}
+.pabx-bar-l{display:flex;align-items:center;gap:8px}
+.pabx-bar-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pabx-bar-dot.bdialing{background:var(--orange);animation:pb .4s infinite}
+.pabx-bar-dot.bcalling{background:var(--green);box-shadow:0 0 5px var(--green-glow);animation:pb .9s infinite}
+.pabx-bar-dot.berr{background:var(--red)}
+.pabx-bar-dot.btel{background:var(--blue2)}
+.pabx-bar-info{font-family:var(--mono);font-size:10px;font-weight:600}
+.pabx-bar-sub{font-family:var(--mono);font-size:9px;color:var(--text3)}
+
+/* Big call button */
 .big-call-btn{background:var(--green);color:#000;border:none;padding:13px;border-radius:10px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 32px var(--green-glow);transition:.2s}
 .big-call-btn:hover{transform:translateY(-1px);box-shadow:0 0 48px rgba(0,232,122,.35)}
+.big-call-btn:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed;box-shadow:none;transform:none}
 .skip-row{display:flex;gap:6px}
 
-/* Calling state */
+/* Timer */
 .timer-bar{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border-radius:8px;padding:9px 13px}
 .timer-display{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--yellow)}
 .timer-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pb .8s infinite;flex-shrink:0}
 
-.result-hint{font-size:10px;text-align:center;color:var(--text3);font-family:var(--mono);padding:2px 0}
+/* Result buttons */
+.result-hint{font-size:10px;text-align:center;color:var(--text3);font-family:var(--mono)}
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.result-btn{background:var(--panel2);border:1.5px solid var(--border2);color:var(--text2);padding:12px 8px;border-radius:9px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;text-align:center;line-height:1.4}
+.result-btn{background:var(--panel2);border:1.5px solid var(--border2);color:var(--text2);padding:13px 8px;border-radius:9px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;text-align:center;line-height:1.4}
 .result-btn:hover{transform:translateY(-1px);background:var(--bg2)}
-.result-btn small{font-size:9px;opacity:.65;display:block;margin-top:2px}
+.result-btn small{font-size:9px;opacity:.6;display:block;margin-top:2px}
 .r-agendou{border-color:var(--green)!important;background:rgba(0,232,122,.1)!important;color:var(--green)!important}
 .r-nao{border-color:var(--yellow)!important;background:rgba(255,214,0,.07)!important;color:var(--yellow)!important}
 .r-remarcar{border-color:var(--blue2)!important;background:rgba(77,147,255,.08)!important;color:var(--blue2)!important}
@@ -137,15 +176,17 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .enc-btn{background:rgba(255,51,85,.07);border:1.5px solid rgba(255,51,85,.25);color:var(--red);padding:9px;border-radius:8px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:5px}
 .enc-btn:hover{background:rgba(255,51,85,.16)}
 
-/* Ended (manual mode) */
-.ended-sum{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--panel2);border-radius:8px}
+/* Ended */
+.ended-sum{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--panel2);border-radius:8px;border:1px solid var(--border)}
 .ended-act{display:flex;gap:6px}
-.btn-nxt{flex:1;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border:none;padding:10px;border-radius:8px;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer;transition:.2s}
+.btn-nxt{flex:1;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border:none;padding:11px;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:800;cursor:pointer}
 .btn-nxt:hover{opacity:.9}
-.btn-recall{background:var(--panel2);border:1px solid var(--border2);color:var(--text2);padding:10px 14px;border-radius:8px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-recall{background:var(--panel2);border:1px solid var(--border2);color:var(--text2);padding:11px 14px;border-radius:8px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
 .btn-recall:hover{border-color:var(--green);color:var(--green)}
+/* Ended result buttons (select after hangup) */
+.ended-result-prompt{font-size:10px;text-align:center;color:var(--text3);font-family:var(--mono);margin-bottom:2px}
 
-/* COUNTDOWN OVERLAY */
+/* COUNTDOWN */
 .cd-overlay{position:absolute;inset:0;background:rgba(8,10,15,.96);border-radius:12px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:20;backdrop-filter:blur(3px)}
 .cd-badge{font-size:11px;font-weight:700;padding:4px 13px;border-radius:20px;border:1px solid;font-family:var(--mono)}
 .cd-lbl{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono)}
@@ -155,7 +196,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .cd-next-lbl{font-size:8px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-family:var(--mono);margin-bottom:3px}
 .cd-next-name{font-size:14px;font-weight:800}
 .cd-next-co{font-size:10px;color:var(--text2);margin-top:1px}
-.cd-cancel{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:6px 16px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.cd-cancel{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:6px 16px;border-radius:7px;font-family:var(--sans);font-size:11px;cursor:pointer;transition:.15s}
 .cd-cancel:hover{border-color:var(--red);color:var(--red)}
 
 /* KANBAN SIDEBAR */
@@ -167,10 +208,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .ks-tabs{display:flex}
 .ks-tab{flex:1;padding:6px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:var(--mono)}
 .ks-tab.active{color:var(--green);border-bottom-color:var(--green)}
-.ks-tab:hover:not(.active){color:var(--text2)}
 .ks-body{flex:1;overflow-y:auto;padding:9px}
-
-/* Pipeline */
 .ks-stage{background:var(--panel2);border:1px solid var(--border);border-left:3px solid transparent;border-radius:7px;margin-bottom:6px;overflow:hidden}
 .ks-st-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 9px}
 .ks-st-name{font-size:10px;font-weight:700}
@@ -182,15 +220,21 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .ks-card-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
 .ks-empty-st{font-size:10px;color:var(--text3);text-align:center;padding:5px 8px 8px}
 .ks-more{font-size:9px;color:var(--text3);text-align:center;padding:3px;font-family:var(--mono)}
-
-/* History sidebar */
-.ks-hist{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 9px;margin-bottom:5px}
+.ks-hist{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 9px;margin-bottom:5px;border-left:3px solid transparent}
+.ks-hist.pabx{border-left-color:var(--blue2)}
 .ks-hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
 .ks-hist-name{font-size:11px;font-weight:700}
 .ks-hist-result{font-size:10px;font-weight:700;font-family:var(--mono)}
 .ks-hist-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.ks-hist-tag{font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:3px;background:rgba(29,111,255,.1);color:var(--blue2);margin-top:3px;display:inline-block}
+.load-pabx-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:rgba(29,111,255,.08);border:1px solid rgba(29,111,255,.2);color:var(--blue2);padding:8px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.15s;margin-bottom:8px}
+.load-pabx-btn:hover{background:rgba(29,111,255,.16)}
+.live-call-item{background:var(--panel2);border:1px solid rgba(255,214,0,.25);border-left:3px solid var(--yellow);border-radius:7px;padding:8px 10px;margin-bottom:5px}
+.lci-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.lci-ramal{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--yellow)}
+.lci-dest{font-family:var(--mono);font-size:10px;color:var(--text2)}
+.lci-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
 
-/* Scrollbar */
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
@@ -198,21 +242,29 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 /* Modals */
 .modal-bg{display:none;position:fixed;inset:0;z-index:500;background:rgba(8,10,15,.87);backdrop-filter:blur(8px);align-items:center;justify-content:center}
 .modal-bg.on{display:flex}
-.modal{background:var(--panel);border:1px solid var(--border2);border-radius:15px;padding:24px;width:420px;max-width:90vw}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:15px;padding:24px;width:460px;max-width:90vw;max-height:90vh;overflow-y:auto}
 .modal-title{font-size:16px;font-weight:800;margin-bottom:4px}
 .modal-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
 .fg{margin-bottom:11px}
 .flbl{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:5px}
 .fi{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:.15s}
 .fi:focus{border-color:var(--green)}
-.modal-btn{width:100%;background:var(--green);color:#000;border:none;padding:10px;border-radius:8px;font-family:var(--sans);font-weight:800;font-size:13px;cursor:pointer;margin-top:3px}
+.fi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fi-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.modal-btn{width:100%;background:var(--green);color:#000;border:none;padding:10px;border-radius:8px;font-family:var(--sans);font-weight:800;font-size:13px;cursor:pointer;margin-top:4px}
 .modal-cancel{width:100%;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px;border-radius:8px;font-family:var(--sans);font-weight:600;font-size:12px;cursor:pointer;margin-top:6px}
+.pabx-info-box{background:rgba(29,111,255,.06);border:1px solid rgba(29,111,255,.15);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:14px}
+.pabx-info-box code{background:var(--panel2);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:10px;color:var(--yellow)}
+.test-btn{background:rgba(29,111,255,.1);border:1px solid rgba(29,111,255,.3);color:var(--blue2);padding:8px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;width:100%}
+.test-btn:hover{background:rgba(29,111,255,.2)}
+.section-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-family:var(--mono);margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* Toast */
-.toast{position:fixed;bottom:18px;right:18px;z-index:999;background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:8px 15px;font-size:12px;font-weight:600;opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none}
+.toast{position:fixed;bottom:18px;right:18px;z-index:999;background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:8px 15px;font-size:12px;font-weight:600;opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none;max-width:320px}
 .toast.on{opacity:1;transform:translateY(0)}
 .toast.ok{border-color:rgba(0,232,122,.4);color:var(--green)}
 .toast.err{border-color:rgba(255,51,85,.4);color:var(--red)}
+.toast.warn{border-color:rgba(255,214,0,.4);color:var(--yellow)}
 
 @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .call-screen>*{animation:fu .24s ease both}
@@ -267,28 +319,45 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       <div class="ss">
         <div class="ss-item">📞 <b id="ss-calls">0</b></div>
         <div class="ss-item">⏱ <b id="ss-time">00:00</b></div>
-        <div class="ss-item">📅 <b id="ss-sched">0</b> agend</div>
+        <div class="ss-item">📅 <b id="ss-sched">0</b></div>
       </div>
     </div>
     <div class="mt-right">
-      <div class="pd-pill on" id="pd-pill" onclick="togglePD()" title="Power Dialer Automático">
-        <div class="pd-dot"></div>
-        <div class="pd-lbl" id="pd-lbl">⚡ AUTO</div>
+      <div class="pill" id="pabx-pill" onclick="testPabx()" title="Status PABX / Testar">
+        <div class="pill-dot" id="pabx-dot"></div>
+        <span class="pill-lbl" id="pabx-lbl">PABX</span>
+      </div>
+      <div class="pill auto-on" id="auto-pill" onclick="togglePD()">
+        <div class="pill-dot" style="background:var(--green);box-shadow:0 0 5px var(--green-glow)"></div>
+        <span class="pill-lbl" id="auto-lbl" style="color:var(--green)">⚡ AUTO</span>
       </div>
       <button class="tbtn" onclick="startAutoQueue()">▶ Iniciar Fila</button>
     </div>
   </div>
 
+  <!-- CORS BANNER — aparece quando rodando como file:// -->
+  <div class="cors-banner" id="cors-banner">
+    <div class="cors-banner-title">⚠ PABX bloqueado — configuração necessária</div>
+    <div class="cors-banner-text">
+      Para o PABX funcionar, o arquivo precisa estar no <b>Vercel</b> com o proxy configurado.<br>
+      1. Adicione <code>api/pabx.js</code> ao repositório GitHub<br>
+      2. OU configure um <b>Proxy URL</b> nas configurações ⚙<br>
+      3. OU use o modo <b>Tel: Manual</b> (abre o discador do celular)
+    </div>
+    <div class="cors-banner-btns">
+      <button class="cors-btn cors-btn-copy" onclick="copyProxyInstructions()">📋 Copiar código do proxy</button>
+      <button class="cors-btn cors-btn-skip" onclick="document.getElementById('cors-banner').style.display='none'">✕ Fechar</button>
+    </div>
+  </div>
+
   <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-    <!-- Empty -->
     <div class="state-empty" id="state-empty">
-      <div class="state-empty-ico">📞</div>
-      <div class="state-empty-ttl">Fila pronta</div>
-      <div class="state-empty-sub">Clique em "Iniciar Fila" para começar a discagem automática.</div>
-      <button class="btn-start" onclick="startAutoQueue()">▶ Iniciar Fila Automática</button>
+      <div style="font-size:42px;opacity:.3">📞</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text2)">Fila pronta</div>
+      <div style="font-size:12px;text-align:center;max-width:240px;line-height:1.6">Clique em "Iniciar Fila" para começar. Ligações serão feitas via PABX IntegraVoip.</div>
+      <button class="btn-start" onclick="startAutoQueue()">▶ Iniciar Fila</button>
     </div>
 
-    <!-- Call screen -->
     <div class="call-screen" id="call-screen" style="display:none">
 
       <!-- Lead hero -->
@@ -321,12 +390,12 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
             <div class="cd-next-name" id="cd-next-name">—</div>
             <div class="cd-next-co" id="cd-next-co">—</div>
           </div>
-          <button class="cd-cancel" onclick="cancelCountdown()">✕ Cancelar auto-avanço</button>
+          <button class="cd-cancel" onclick="cancelCountdown()">✕ Cancelar</button>
         </div>
 
         <!-- IDLE -->
         <div class="cc-idle" id="cc-idle">
-          <button class="big-call-btn" onclick="startCall()">
+          <button class="big-call-btn" id="btn-call" onclick="startCall()">
             <span style="font-size:18px">📞</span>
             <span>Ligar — <span id="cc-prev" style="font-family:var(--mono)">—</span></span>
           </button>
@@ -338,6 +407,16 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 
         <!-- CALLING -->
         <div class="cc-calling" id="cc-calling">
+          <div class="pabx-bar" id="pabx-bar">
+            <div class="pabx-bar-l">
+              <div class="pabx-bar-dot" id="pabx-bar-dot"></div>
+              <div>
+                <div class="pabx-bar-info" id="pabx-bar-info">Conectando...</div>
+                <div class="pabx-bar-sub" id="pabx-bar-sub">—</div>
+              </div>
+            </div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)" id="pabx-bar-dest">—</div>
+          </div>
           <div class="timer-bar">
             <div>
               <div class="timer-display" id="timer-display">00:00</div>
@@ -348,7 +427,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
               <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px" id="call-phone">—</div>
             </div>
           </div>
-          <div class="result-hint">👇 Toque no resultado para encerrar e avançar automaticamente</div>
+          <div class="result-hint">👇 Toque no resultado — encerra e avança automaticamente</div>
           <div class="result-grid">
             <button class="result-btn" onclick="endWithResult('Agendou','r-agendou',this)">📅 Agendou<small>Reunião marcada</small></button>
             <button class="result-btn" onclick="endWithResult('Não Atendeu','r-nao',this)">❌ Não Atendeu<small>Sem resposta</small></button>
@@ -357,14 +436,26 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
             <button class="result-btn" onclick="endWithResult('Contato Feito','r-contato',this)">✅ Contato Feito<small>Falou, sem ag.</small></button>
             <button class="result-btn" onclick="endWithResult('Caixa Postal','r-postal',this)">📬 Caixa Postal<small>Voicemail</small></button>
           </div>
-          <button class="enc-btn" onclick="endNoResult()">⏹ Encerrar sem resultado</button>
+          <button class="enc-btn" onclick="endNoResult()">⏹ Encerrar</button>
         </div>
 
-        <!-- ENDED (manual) -->
+        <!-- ENDED — sempre pede resultado antes de avançar -->
         <div class="cc-ended" id="cc-ended">
           <div class="ended-sum">
             <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Resultado</div><div style="font-size:14px;font-weight:700" id="ended-res">—</div></div>
             <div style="text-align:right"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Duração</div><div style="font-family:var(--mono);font-size:13px;font-weight:700" id="ended-dur">—</div></div>
+          </div>
+          <!-- Se não tem resultado, pede aqui também -->
+          <div id="ended-result-area" style="display:none">
+            <div class="ended-result-prompt">Selecione o resultado antes de avançar:</div>
+            <div class="result-grid" style="margin-top:6px">
+              <button class="result-btn" onclick="setEndedResult('Agendou','r-agendou',this)">📅 Agendou</button>
+              <button class="result-btn" onclick="setEndedResult('Não Atendeu','r-nao',this)">❌ Não Atendeu</button>
+              <button class="result-btn" onclick="setEndedResult('Remarcar','r-remarcar',this)">🔄 Remarcar</button>
+              <button class="result-btn" onclick="setEndedResult('Desqualificado','r-desq',this)">🚫 Desqualificado</button>
+              <button class="result-btn" onclick="setEndedResult('Contato Feito','r-contato',this)">✅ Contato</button>
+              <button class="result-btn" onclick="setEndedResult('Caixa Postal','r-postal',this)">📬 Postal</button>
+            </div>
           </div>
           <div class="ended-act">
             <button class="btn-nxt" onclick="nextLead()">▶ Próximo Lead</button>
@@ -385,11 +476,13 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       <div class="ks-sync" id="ks-sync">—</div>
     </div>
     <div class="ks-tabs">
-      <div class="ks-tab active" onclick="setKsTab('pipeline',this)">Kanban</div>
-      <div class="ks-tab" onclick="setKsTab('historico',this)">Histórico</div>
+      <div class="ks-tab active" onclick="setKsTab('pipe',this)">Kanban</div>
+      <div class="ks-tab" onclick="setKsTab('online',this)">Ao Vivo</div>
+      <div class="ks-tab" onclick="setKsTab('hist',this)">Histórico</div>
     </div>
   </div>
   <div class="ks-body" id="ks-pipe"></div>
+  <div class="ks-body" id="ks-online" style="display:none"></div>
   <div class="ks-body" id="ks-hist" style="display:none"></div>
 </div>
 
@@ -399,12 +492,33 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <div class="modal-bg" id="cfg-modal">
   <div class="modal">
     <div class="modal-title">⚙ Configurações</div>
-    <div class="modal-sub">SDR e integrações</div>
-    <div class="fg"><label class="flbl">Seu Nome (SDR)</label><input type="text" class="fi" id="cfg-name" placeholder="Ex: Ana Lima"></div>
-    <div class="fg"><label class="flbl">Token RD Station CRM</label><input type="password" class="fi" id="cfg-rd" placeholder="Token pessoal RD Station"></div>
-    <div class="fg"><label class="flbl">Pipeline ID (RD Station)</label><input type="text" class="fi" id="cfg-pipe" placeholder="694aabf03f1ed8001d44a46b"></div>
-    <div class="fg"><label class="flbl">Delay Auto-Avanço (segundos)</label><input type="number" class="fi" id="cfg-delay" min="1" max="10" placeholder="3"></div>
-    <button class="modal-btn" onclick="saveCfg()">💾 Salvar</button>
+    <div class="modal-sub">SDR, PABX IntegraVoip e integrações</div>
+
+    <div class="pabx-info-box">
+      🔌 <b>IntegraVoip</b> · pabx2.integravoip.com.br<br>
+      Token: <code>be6e3c68-9013...</code> · Usuário: <code>gestao-fitness-brasil-api</code><br>
+      <br>
+      ⚠ Se estiver abrindo como arquivo local, configure um <b>Proxy URL</b> abaixo ou faça deploy no Vercel com o arquivo <code>api/pabx.js</code>.
+    </div>
+
+    <div class="section-label">SDR & Discagem</div>
+    <div class="fg fi-row">
+      <div><label class="flbl">Seu Nome (SDR)</label><input type="text" class="fi" id="cfg-name" placeholder="Ex: Ana Lima"></div>
+      <div><label class="flbl">Ramal de Origem</label><input type="number" class="fi" id="cfg-ramal" placeholder="201" min="100" max="999"></div>
+    </div>
+    <div class="fg fi-row3">
+      <div><label class="flbl">Delay Auto (s)</label><input type="number" class="fi" id="cfg-delay" min="1" max="15" placeholder="3"></div>
+      <div style="grid-column:span 2"><label class="flbl">Proxy PABX (URL completa)</label><input type="text" class="fi" id="cfg-proxy" placeholder="https://seusite.vercel.app/api/pabx"></div>
+    </div>
+    <button class="test-btn" onclick="testPabx()">🔌 Testar conexão PABX agora</button>
+
+    <div class="section-label">RD Station CRM</div>
+    <div class="fg fi-row">
+      <div><label class="flbl">Token RD Station</label><input type="password" class="fi" id="cfg-rd" placeholder="Token pessoal"></div>
+      <div><label class="flbl">Pipeline ID</label><input type="text" class="fi" id="cfg-pipe" placeholder="694aab..."></div>
+    </div>
+
+    <button class="modal-btn" onclick="saveCfg()">💾 Salvar configurações</button>
     <button class="modal-cancel" onclick="closeCfg()">Cancelar</button>
   </div>
 </div>
@@ -413,7 +527,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <div class="modal-bg" id="add-modal">
   <div class="modal">
     <div class="modal-title">＋ Adicionar Lead</div>
-    <div class="modal-sub">Lead manual na fila</div>
+    <div class="modal-sub">Lead manual na fila de discagem</div>
     <div class="fg"><label class="flbl">Nome</label><input type="text" class="fi" id="al-name" placeholder="Nome completo"></div>
     <div class="fg"><label class="flbl">Telefone</label><input type="text" class="fi" id="al-phone" placeholder="5511999999999"></div>
     <div class="fg"><label class="flbl">Academia / Empresa</label><input type="text" class="fi" id="al-co" placeholder="Nome da academia"></div>
@@ -436,39 +550,174 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <script>
 // ══ STATE ══
 const LS={get:(k,d='')=>{try{return localStorage.getItem('gfb_'+k)||d}catch{return d}},set:(k,v)=>{try{localStorage.setItem('gfb_'+k,v)}catch{}}};
-
-let cfg={
-  name:LS.get('sdr_name'),
-  rdToken:LS.get('rd_token'),
-  pipeId:LS.get('pipe_id','694aabf03f1ed8001d44a46b'),
-  delay:parseInt(LS.get('delay','3'))||3
-};
-
+let cfg={name:LS.get('sdr_name'),rdToken:LS.get('rd_token'),pipeId:LS.get('pipe_id','694aabf03f1ed8001d44a46b'),delay:parseInt(LS.get('delay','3'))||3,ramal:parseInt(LS.get('ramal','201'))||201,proxy:LS.get('proxy','')};
 let leads=JSON.parse(LS.get('leads','[]'));
-let history=JSON.parse(LS.get('history','[]'));
-let curFilter='all';
-let curIdx=-1;
-let callState='idle';
-let timerInt=null;
-let sessInt=null;
-let callStart=null;
-let sessStart=Date.now();
-let sessCalls=0;
-let sessSched=0;
-let selResult='';
-let powerDialer=true;
-let cdInt=null;
-let lastDur=0;
+let hist=JSON.parse(LS.get('history','[]'));
+let curFilter='all',curIdx=-1,callState='idle';
+let timerInt=null,sessInt=null,callStart=null,cdInt=null,pabxPollInt=null;
+let sessStart=Date.now(),sessCalls=0,sessSched=0,selResult='',lastDur=0;
+let powerDialer=true,pabxSt='unknown',pabxCallFound=false,liveCalls=[];
 
-const STAGE_COLORS={
-  'Sem Contato/Lead':'#7a94b0','Contato Feito':'#4d93ff',
-  'Reunião Agendada':'#00e87a','Remarcar Reunião':'#ffd600',
-  'Entrar em Contato':'#ff8c00','Em Negociação':'#8b5cf6','Acompanhamento':'#ff3355'
-};
+const STAGE_COLORS={'Sem Contato/Lead':'#7a94b0','Contato Feito':'#4d93ff','Reunião Agendada':'#00e87a','Remarcar Reunião':'#ffd600','Entrar em Contato':'#ff8c00','Em Negociação':'#8b5cf6','Acompanhamento':'#ff3355'};
 const STAGES=['Sem Contato/Lead','Contato Feito','Reunião Agendada','Remarcar Reunião','Entrar em Contato','Em Negociação','Acompanhamento'];
-const RESULT_COLORS={'Agendou':'var(--green)','Não Atendeu':'var(--yellow)','Remarcar':'var(--blue2)','Desqualificado':'var(--red)','Contato Feito':'var(--purple)','Caixa Postal':'var(--orange)'};
+const RES_COLORS={'Agendou':'var(--green)','Não Atendeu':'var(--yellow)','Remarcar':'var(--blue2)','Desqualificado':'var(--red)','Contato Feito':'var(--purple)','Caixa Postal':'var(--orange)'};
+const BADGE_STYLES={'Agendou':'color:var(--green);border-color:var(--green);background:rgba(0,232,122,.1)','Não Atendeu':'color:var(--yellow);border-color:var(--yellow);background:rgba(255,214,0,.07)','Remarcar':'color:var(--blue2);border-color:var(--blue2);background:rgba(77,147,255,.07)','Desqualificado':'color:var(--red);border-color:var(--red);background:rgba(255,51,85,.07)','Contato Feito':'color:var(--purple);border-color:var(--purple);background:rgba(139,92,246,.07)','Caixa Postal':'color:var(--orange);border-color:var(--orange);background:rgba(255,140,0,.07)'};
 
-// ══ DEMO ══
+// ══ PABX ══
+const PABX_BASE='https://pabx2.integravoip.com.br/suite/api';
+const PABX_TOKEN='be6e3c68-9013-4701-b09e-e828466f9238';
+const PABX_USR='gestao-fitness-brasil-api';
+
+// Auto-detect proxy URL
+function getPabxProxy() {
+  if(cfg.proxy)return cfg.proxy;
+  // Se rodando no Vercel (domínio real, não file://)
+  if(window.location.protocol!=='file:'&&!['localhost','127.0.0.1'].includes(window.location.hostname)){
+    return window.location.origin+'/api/pabx';
+  }
+  return null; // sem proxy = chamada direta (vai falhar por CORS se file://)
+}
+
+async function pabxFetch(endpoint,opts={}){
+  const proxy=getPabxProxy();
+  if(proxy){
+    // Rota pelo proxy Vercel
+    const body=opts.body?JSON.parse(opts.body):undefined;
+    const r=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint,method:opts.method||'GET',body})});
+    const txt=await r.text();
+    try{return JSON.parse(txt);}catch{return{raw:txt,status:r.status};}
+  }else{
+    // Chamada direta — pode falhar por CORS se file://
+    const h={'accept':'application/json','usuario':PABX_USR,'token':PABX_TOKEN};
+    if(opts.method==='POST')h['Content-Type']='application/json';
+    const r=await fetch(PABX_BASE+endpoint,{...opts,headers:h});
+    const txt=await r.text();
+    try{return JSON.parse(txt);}catch{return{raw:txt};}
+  }
+}
+
+async function pabxDial(phone,ramal){return pabxFetch('/discar_numero',{method:'POST',body:JSON.stringify({dados:{numero_ramal_origem:parseInt(ramal),numero_destino:String(phone)}})});}
+async function pabxOnline(){return pabxFetch('/listar_chamadas_online');}
+async function pabxHistorico(di,hi,df,hf){return pabxFetch(`/listar_historico_chamada?data_inicial=${di}&hora_inicial=${hi}&data_final=${df}&hora_final=${hf}`);}
+
+function fmtPhonePABX(p){let c=p.replace(/\D/g,'');if(c.startsWith('55')&&c.length>=12)c=c.slice(2);return c;}
+function extractArr(d){if(Array.isArray(d))return d;for(const k of['dados','data','chamadas','result','results']){if(d&&Array.isArray(d[k]))return d[k];}if(d&&typeof d==='object'){const v=Object.values(d);if(v.length&&Array.isArray(v[0]))return v[0];}return[];}
+
+function setPabxSt(st,info=''){
+  pabxSt=st;
+  const pill=document.getElementById('pabx-pill');
+  const dot=document.getElementById('pabx-dot');
+  const lbl=document.getElementById('pabx-lbl');
+  if(!pill)return;
+  pill.className='pill';
+  if(st==='ok'){pill.classList.add('pabx-ok');dot.style.background='var(--green)';lbl.textContent='PABX ✓';lbl.style.color='var(--green)';}
+  else if(st==='err'){pill.classList.add('pabx-err');dot.style.background='var(--red)';lbl.textContent='PABX ✗';lbl.style.color='var(--red)';}
+  else if(st==='calling'){pill.classList.add('pabx-calling');dot.style.cssText='background:var(--yellow);animation:pb .7s infinite';lbl.textContent='PABX 📞';lbl.style.color='var(--yellow)';}
+  else if(st==='dialing'){pill.classList.add('pabx-connecting');dot.style.cssText='background:var(--orange);animation:pb .4s infinite';lbl.textContent='Discando...';lbl.style.color='var(--orange)';}
+  else{dot.style.background='var(--text3)';lbl.textContent='PABX';lbl.style.color='var(--text3)';}
+  // Update bar
+  const bar=document.getElementById('pabx-bar');
+  const bDot=document.getElementById('pabx-bar-dot');
+  const bInfo=document.getElementById('pabx-bar-info');
+  const bSub=document.getElementById('pabx-bar-sub');
+  if(!bar)return;
+  bar.className='pabx-bar';
+  if(st==='dialing'){bar.classList.add('bar-dialing');bDot.className='pabx-bar-dot bdialing';if(bInfo)bInfo.textContent=info||'Discando via PABX...';}
+  else if(st==='calling'){bar.classList.add('bar-calling');bDot.className='pabx-bar-dot bcalling';if(bInfo)bInfo.textContent=info||'Chamada ativa';}
+  else if(st==='err'){bar.classList.add('bar-err');bDot.className='pabx-bar-dot berr';if(bInfo)bInfo.textContent='Erro PABX — ligando via tel:';}
+  else if(st==='tel'){bar.classList.add('bar-tel');bDot.className='pabx-bar-dot btel';if(bInfo)bInfo.textContent='Discagem manual (tel:)';}
+  else{bDot.className='pabx-bar-dot';if(bInfo)bInfo.textContent='Aguardando...';}
+  if(bSub)bSub.textContent=`Ramal ${cfg.ramal||201}`;
+}
+
+async function testPabx(){
+  setPabxSt('dialing','Testando conexão...');
+  toast('🔌 Testando PABX IntegraVoip...','ok');
+  try{
+    const d=await pabxOnline();
+    if(d.raw&&!d.dados&&!d.data&&!Array.isArray(d))throw new Error('Resposta inesperada: '+JSON.stringify(d).slice(0,80));
+    setPabxSt('ok');
+    toast('✅ PABX conectado! IntegraVoip OK','ok');
+  }catch(e){
+    setPabxSt('err');
+    const isCors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError')||e.message.includes('CORS');
+    if(isCors){
+      document.getElementById('cors-banner').style.display='block';
+      toast('⚠ CORS bloqueado — veja o banner abaixo','warn');
+    }else{
+      toast('❌ PABX: '+e.message,'err');
+    }
+  }
+}
+
+// ══ PABX POLLING ══
+function startPabxPoll(){
+  pabxCallFound=false;
+  const ramal=cfg.ramal||201;
+  pabxPollInt=setInterval(async()=>{
+    if(callState!=='calling'){clearInterval(pabxPollInt);return;}
+    try{
+      const d=await pabxOnline();
+      const calls=extractArr(d);
+      liveCalls=calls;
+      const myCall=calls.find(c=>String(c.ramal_origem)==String(ramal)||String(c.numero_ramal_origem)==String(ramal)||String(c.ramal)==String(ramal)||String(c.id_ramal)==String(ramal));
+      if(myCall){
+        pabxCallFound=true;
+        const dest=myCall.numero_destino||myCall.destino||'—';
+        const dur=myCall.duracao||myCall.tempo_chamada||'';
+        setPabxSt('calling',`Ramal ${ramal} → ${dest}`);
+        const el=document.getElementById('pabx-bar-dest');if(el)el.textContent=dest+(dur?' · '+dur:'');
+        renderOnlineTab(calls);
+      }else if(pabxCallFound&&callState==='calling'){
+        pabxCallFound=false;clearInterval(pabxPollInt);
+        setPabxSt('ok');
+        toast('📵 Chamada encerrada pelo PABX','ok');
+        endNoResult();
+      }
+    }catch(e){console.warn('[PABX poll]',e.message);}
+  },3000);
+}
+function stopPabxPoll(){clearInterval(pabxPollInt);pabxCallFound=false;}
+
+async function loadPabxHistorico(){
+  const btn=document.getElementById('btn-pabx-hist');
+  if(btn){btn.textContent='⏳ Carregando...';btn.disabled=true;}
+  try{
+    const now=new Date();
+    const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const fmtH=d=>`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const d=await pabxHistorico(fmt(now),'00:00',fmt(now),fmtH(now));
+    const arr=extractArr(d);
+    if(!arr.length){toast('Nenhuma chamada hoje no PABX','warn');return;}
+    const mapped=arr.map(c=>({id:Date.now()+Math.random(),leadName:c.numero_destino||c.destino||'—',company:c.nome_origem||'',result:c.resultado||c.status_chamada||'PABX',duration:c.duracao||c.tempo_total||'—',time:(c.hora_inicio||c.hora||'').substring(0,5)||'—',fromPabx:true}));
+    hist=[...mapped,...hist.filter(h=>!h.fromPabx)];
+    LS.set('history',JSON.stringify(hist));renderHist();
+    toast(`✅ ${arr.length} chamadas carregadas do PABX`,'ok');
+  }catch(e){toast('Erro PABX histórico: '+e.message,'err');}
+  finally{if(btn){btn.textContent='📋 Carregar histórico PABX (hoje)';btn.disabled=false;}}
+}
+
+// Copia código do proxy para clipboard
+function copyProxyInstructions(){
+  const code=`// api/pabx.js — Vercel Serverless Function
+const PABX_BASE='https://pabx2.integravoip.com.br/suite/api';
+export default async function handler(req,res){
+  res.setHeader('Access-Control-Allow-Origin','*');
+  res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers','Content-Type');
+  if(req.method==='OPTIONS'){res.status(200).end();return;}
+  const{endpoint,method='GET',body}=req.body||{};
+  if(!endpoint){res.status(400).json({error:'endpoint required'});return;}
+  const h={'accept':'application/json','usuario':'gestao-fitness-brasil-api','token':'be6e3c68-9013-4701-b09e-e828466f9238'};
+  if(method==='POST')h['Content-Type']='application/json';
+  const r=await fetch(PABX_BASE+endpoint,{method,headers:h,...(body?{body:JSON.stringify(body)}:{})});
+  const txt=await r.text();
+  res.status(r.status).send(txt||'{}');
+}`;
+  navigator.clipboard.writeText(code).then(()=>toast('✅ Código copiado! Cole em api/pabx.js no repositório','ok')).catch(()=>toast('Copie o arquivo api_pabx.js que foi baixado junto','warn'));
+}
+
+// ══ DEMO DATA ══
 function loadDemo(){
   if(leads.length)return;
   leads=[
@@ -477,17 +726,15 @@ function loadDemo(){
     {id:'3',name:'Tiago Mendes',company:'CrossFit Norte',phone:'5511965432109',stage:'Remarcar Reunião',attempts:2,called:false,dealId:'d3',notes:'Remarcar 26/05'},
     {id:'4',name:'Camila Ferreira',company:'Pilates Premium',phone:'5511943210987',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d4',notes:''},
     {id:'5',name:'Matheus Paraíso',company:'Academia Central',phone:'5511932109876',stage:'Entrar em Contato',attempts:1,called:false,dealId:'d5',notes:''},
-    {id:'6',name:'Cláudio Cruz',company:'Box Training SP',phone:'5511921098765',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d6',notes:''},
-    {id:'7',name:'Fernando Lopes',company:'Gym & Health Club',phone:'5511910987654',stage:'Em Negociação',attempts:3,called:false,dealId:'d7',notes:'Proposta enviada'},
-    {id:'8',name:'Thyago Santos',company:'FitLife Academia',phone:'5511909876543',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d8',notes:''},
-    {id:'9',name:'Luan Carvalho',company:'Move Fitness',phone:'5511898765432',stage:'Contato Feito',attempts:1,called:false,dealId:'d9',notes:''},
-    {id:'10',name:'Renata Oliveira',company:'Studio Zen',phone:'5511887654321',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d10',notes:''},
+    {id:'6',name:'Fernando Lopes',company:'Gym & Health Club',phone:'5511910987654',stage:'Em Negociação',attempts:3,called:false,dealId:'d6',notes:'Proposta enviada'},
+    {id:'7',name:'Thyago Santos',company:'FitLife Academia',phone:'5511909876543',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d7',notes:''},
+    {id:'8',name:'Renata Oliveira',company:'Studio Zen',phone:'5511887654321',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d8',notes:''},
   ];
   saveLeads();
 }
 function saveLeads(){LS.set('leads',JSON.stringify(leads));}
 
-// ══ QUEUE RENDER ══
+// ══ QUEUE ══
 function getFiltered(){
   const q=document.getElementById('search-input').value.toLowerCase();
   return leads.filter(l=>{
@@ -508,29 +755,20 @@ function renderQueue(){
   document.getElementById('stat-done').textContent=done;
   document.getElementById('stat-pend').textContent=leads.length-done;
   list.innerHTML=fil.map(l=>{
-    const c=STAGE_COLORS[l.stage]||'#7a94b0';
-    const gi=leads.indexOf(l);
-    const isA=gi===curIdx;
-    const isC=isA&&callState==='calling';
-    return `<div class="lead-card${isA?' active':''}${isC?' calling':''}${l.called&&!isA?' done':''}" onclick="selectLead(${gi})">
+    const c=STAGE_COLORS[l.stage]||'#7a94b0',gi=leads.indexOf(l),isA=gi===curIdx,isC=isA&&callState==='calling';
+    return`<div class="lead-card${isA?' active':''}${isC?' calling':''}${l.called&&!isA?' done':''}" onclick="selectLead(${gi})">
       <div class="lc-top"><div class="lc-name">${l.name}</div><div class="lc-att${l.attempts>=3?' hot':''}">${l.attempts}x</div></div>
       <div class="lc-phone">${l.phone?fmtPhone(l.phone):'⚠ sem telefone'}</div>
       <div class="lc-stage"><div class="lc-dot" style="background:${c}"></div>${l.stage}</div>
     </div>`;
   }).join('');
 }
-function fmtPhone(p){
-  const c=p.replace(/\D/g,'');
-  if(c.length===13)return`+${c.slice(0,2)} (${c.slice(2,4)}) ${c.slice(4,9)}-${c.slice(9)}`;
-  if(c.length===11)return`(${c.slice(0,2)}) ${c.slice(2,7)}-${c.slice(7)}`;
-  return p;
-}
+function fmtPhone(p){const c=p.replace(/\D/g,'');if(c.length===13)return`+${c.slice(0,2)} (${c.slice(2,4)}) ${c.slice(4,9)}-${c.slice(9)}`;if(c.length===11)return`(${c.slice(0,2)}) ${c.slice(2,7)}-${c.slice(7)}`;return p;}
 
 // ══ LEAD SELECTION ══
 function selectLead(idx){
   if(callState==='calling'){toast('Encerre a ligação atual primeiro','err');return;}
-  curIdx=idx;
-  const l=leads[idx];
+  curIdx=idx;const l=leads[idx];
   document.getElementById('state-empty').style.display='none';
   document.getElementById('call-screen').style.display='flex';
   document.getElementById('ch-name').textContent=l.name;
@@ -541,29 +779,53 @@ function selectLead(idx){
   document.getElementById('ch-rd').href=l.dealId?`https://crm.rdstation.com/app/deals/${l.dealId}`:'#';
   document.getElementById('cc-prev').textContent=l.phone?fmtPhone(l.phone):'sem número';
   document.getElementById('call-phone').textContent=l.phone?fmtPhone(l.phone):'—';
-  setUI('idle');
-  selResult='';
+  document.getElementById('pabx-bar-dest').textContent=l.phone?fmtPhonePABX(l.phone):'—';
+  document.getElementById('pabx-bar-sub').textContent=`Ramal ${cfg.ramal||201}`;
+  setUI('idle');selResult='';
   document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');
   renderQueue();
 }
 
 // ══ CALL FLOW ══
-function startCall(){
-  const l=leads[curIdx];
-  if(!l)return;
+async function startCall(){
+  const l=leads[curIdx];if(!l)return;
   if(!l.phone){toast('Lead sem telefone','err');return;}
-  const a=document.createElement('a');
-  a.href='tel:'+l.phone.replace(/\D/g,'');
-  a.style.display='none';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>document.body.removeChild(a),500);
-  callState='calling';callStart=Date.now();
-  l.attempts++;saveLeads();
-  setUI('calling');startTimer();renderQueue();
-  toast('📞 Discando...','ok');
+  const btn=document.getElementById('btn-call');
+  btn.disabled=true;btn.innerHTML='<span style="font-size:18px">⏳</span><span>Discando via PABX...</span>';
+  const phone=fmtPhonePABX(l.phone),ramal=cfg.ramal||201;
+  setPabxSt('dialing',`Discando ${phone}...`);
+
+  try{
+    const result=await pabxDial(phone,ramal);
+    console.log('[PABX] dial →',result);
+    // Verifica erro na resposta
+    const isErr=result.status==='error'||result.erro||result.error||(result.raw&&typeof result.status==='number'&&result.status>=400);
+    if(isErr)throw new Error(result.message||result.mensagem||String(result.raw||'Erro desconhecido').slice(0,100));
+    // Sucesso
+    callState='calling';callStart=Date.now();l.attempts++;saveLeads();
+    setUI('calling');startTimer();startPabxPoll();renderQueue();
+    setPabxSt('calling',`Ramal ${ramal} → ${phone}`);
+    toast('✅ PABX: discando ramal '+ramal,'ok');
+  }catch(e){
+    console.error('[PABX] err:',e);
+    const isCors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError');
+    setPabxSt('err');
+    btn.disabled=false;
+    btn.innerHTML=`<span style="font-size:18px">📞</span><span>Ligar — <span id="cc-prev" style="font-family:var(--mono)">${fmtPhone(l.phone)}</span></span>`;
+    if(isCors){
+      document.getElementById('cors-banner').style.display='block';
+      toast('⚠ CORS: usando tel: como fallback','warn');
+      // Fallback silencioso para tel:
+      const a=document.createElement('a');a.href='tel:'+phone;a.click();
+      callState='calling';callStart=Date.now();l.attempts++;saveLeads();
+      setUI('calling');startTimer();renderQueue();
+      setPabxSt('tel','Discagem tel: (fallback)');
+    }else{
+      toast('❌ PABX: '+e.message.slice(0,80),'err');
+    }
+  }
 }
 
-// 1-CLICK: resultado + encerra + auto-avança
 function endWithResult(label,cls,btn){
   if(callState!=='calling')return;
   selResult=label;
@@ -574,210 +836,151 @@ function endWithResult(label,cls,btn){
 
 function endNoResult(){
   if(callState!=='calling')return;
-  selResult='';
-  finalizeCall('');
+  selResult='';finalizeCall('');
 }
 
 function finalizeCall(label){
-  callState='ended';
-  stopTimer();
-  const dur=Math.floor((Date.now()-callStart)/1000);
-  lastDur=dur;
-  const l=leads[curIdx];
-  l.called=true;
-  if(label)updateStage(curIdx,label);
-  saveLeads();
+  callState='ended';stopTimer();stopPabxPoll();
+  const dur=Math.floor((Date.now()-callStart)/1000);lastDur=dur;
+  const l=leads[curIdx];l.called=true;
+  if(label)updateStage(curIdx,label);saveLeads();
   sessCalls++;document.getElementById('ss-calls').textContent=sessCalls;
   if(label==='Agendou'){sessSched++;document.getElementById('ss-sched').textContent=sessSched;}
-  history.unshift({id:Date.now(),leadName:l.name,company:l.company||'',result:label||'Sem resultado',duration:fmtTime(dur),time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
-  if(history.length>100)history.pop();
-  LS.set('history',JSON.stringify(history));
+  hist.unshift({id:Date.now(),leadName:l.name,company:l.company||'',result:label||'—',duration:fmtTime(dur),time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
+  if(hist.length>100)hist.pop();LS.set('history',JSON.stringify(hist));
   renderQueue();renderKanban();renderHist();
-  if(powerDialer&&label){startCountdown(label);}
-  else{document.getElementById('ended-res').textContent=label||'—';document.getElementById('ended-dur').textContent=fmtTime(dur);setUI('ended');}
+  setPabxSt('ok');
+  // Reset call button for next lead
+  const nxt=leads[curIdx+1];const btn=document.getElementById('btn-call');
+  if(btn){btn.disabled=false;btn.innerHTML=`<span style="font-size:18px">📞</span><span>Ligar — <span id="cc-prev" style="font-family:var(--mono)">${nxt?fmtPhone(nxt.phone||''):'—'}</span></span>`;}
+
+  if(powerDialer&&label){
+    startCountdown(label);
+  }else{
+    // Show ended state with result prompt if no result
+    document.getElementById('ended-res').textContent=label||'Não informado';
+    document.getElementById('ended-dur').textContent=fmtTime(dur);
+    document.getElementById('ended-result-area').style.display=!label?'block':'none';
+    setUI('ended');
+  }
 }
 
-function updateStage(idx,result){
-  const l=leads[idx];if(!l)return;
-  const m={'Agendou':'Reunião Agendada','Remarcar':'Remarcar Reunião','Contato Feito':'Contato Feito','Desqualificado':'Acompanhamento','Caixa Postal':'Entrar em Contato'};
-  if(m[result])l.stage=m[result];
-  else if(result==='Não Atendeu'&&l.stage==='Sem Contato/Lead')l.stage='Entrar em Contato';
+// Permite selecionar resultado no estado "ended"
+function setEndedResult(label,cls,btn){
+  selResult=label;
+  document.querySelectorAll('#ended-result-area .result-btn').forEach(b=>b.className='result-btn');
+  btn.className='result-btn '+cls;
+  document.getElementById('ended-res').textContent=label;
+  document.getElementById('ended-result-area').style.display='none';
+  updateStage(curIdx,label);saveLeads();renderKanban();
+  if(powerDialer){
+    setUI('idle');// esconde ended
+    startCountdown(label);
+  }
 }
 
-function setUI(state){
-  document.getElementById('cc-idle').style.display=state==='idle'?'flex':'none';
-  document.getElementById('cc-calling').style.display=state==='calling'?'flex':'none';
-  document.getElementById('cc-ended').style.display=state==='ended'?'flex':'none';
-}
+function updateStage(idx,r){const l=leads[idx];if(!l)return;const m={'Agendou':'Reunião Agendada','Remarcar':'Remarcar Reunião','Contato Feito':'Contato Feito','Desqualificado':'Acompanhamento','Caixa Postal':'Entrar em Contato'};if(m[r])l.stage=m[r];else if(r==='Não Atendeu'&&l.stage==='Sem Contato/Lead')l.stage='Entrar em Contato';}
+function setUI(s){document.getElementById('cc-idle').style.display=s==='idle'?'flex':'none';document.getElementById('cc-calling').style.display=s==='calling'?'flex':'none';document.getElementById('cc-ended').style.display=s==='ended'?'flex':'none';}
 
 // ══ COUNTDOWN ══
-const BADGE_STYLES={
-  'Agendou':'color:var(--green);border-color:var(--green);background:rgba(0,232,122,.1)',
-  'Não Atendeu':'color:var(--yellow);border-color:var(--yellow);background:rgba(255,214,0,.07)',
-  'Remarcar':'color:var(--blue2);border-color:var(--blue2);background:rgba(77,147,255,.07)',
-  'Desqualificado':'color:var(--red);border-color:var(--red);background:rgba(255,51,85,.07)',
-  'Contato Feito':'color:var(--purple);border-color:var(--purple);background:rgba(139,92,246,.07)',
-  'Caixa Postal':'color:var(--orange);border-color:var(--orange);background:rgba(255,140,0,.07)'
-};
-
 function startCountdown(label){
   let count=cfg.delay||3;
-  const ni=curIdx+1;
-  const nl=ni<leads.length?leads[ni]:null;
-  const badge=document.getElementById('cd-badge');
-  badge.textContent=label;
-  badge.style.cssText=BADGE_STYLES[label]||'color:var(--text2);border-color:var(--border2)';
+  const ni=curIdx+1,nl=ni<leads.length?leads[ni]:null;
+  const badge=document.getElementById('cd-badge');badge.textContent=label;badge.style.cssText=BADGE_STYLES[label]||'color:var(--text2);border-color:var(--border2)';
   document.getElementById('cd-num').textContent=count;
   document.getElementById('cd-next-name').textContent=nl?nl.name:'✅ Fim da fila';
   document.getElementById('cd-next-co').textContent=nl?(nl.company||''):'Todos concluídos!';
   document.getElementById('cd-overlay').style.display='flex';
-  cdInt=setInterval(()=>{
-    count--;
-    document.getElementById('cd-num').textContent=count;
-    if(count<=0){clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';autoNext();}
-  },1000);
+  cdInt=setInterval(()=>{count--;document.getElementById('cd-num').textContent=count;if(count<=0){clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';autoNext();}},1000);
 }
-
 function cancelCountdown(){
-  clearInterval(cdInt);
-  document.getElementById('cd-overlay').style.display='none';
+  clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';
   document.getElementById('ended-res').textContent=selResult||'—';
   document.getElementById('ended-dur').textContent=fmtTime(lastDur);
+  document.getElementById('ended-result-area').style.display=!selResult?'block':'none';
   setUI('ended');
 }
-
-function autoNext(){
-  const ni=curIdx+1;
-  if(ni<leads.length){callState='idle';selectLead(ni);setTimeout(()=>startCall(),500);}
-  else{callState='idle';curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('🎉 Fila concluída! '+sessCalls+' lig · '+sessSched+' agend','ok');}
-}
+function autoNext(){const ni=curIdx+1;if(ni<leads.length){callState='idle';selectLead(ni);setTimeout(()=>startCall(),500);}else{callState='idle';curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('🎉 Fila concluída! '+sessCalls+' lig · '+sessSched+' agend','ok');}}
 
 // ══ NAVIGATION ══
-function nextLead(){
-  callState='idle';
-  const ni=curIdx+1;
-  if(ni<leads.length){selectLead(ni);}
-  else{curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('✅ Fila concluída!','ok');}
-}
+function nextLead(){callState='idle';const ni=curIdx+1;if(ni<leads.length)selectLead(ni);else{curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('✅ Fila concluída!','ok');}}
 function reCall(){callState='idle';setUI('idle');selResult='';document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');}
 function skipLead(){if(callState==='calling'){toast('Encerre primeiro','err');return;}nextLead();toast('Lead pulado','ok');}
 function markNoPhone(){if(curIdx<0)return;leads[curIdx].notes='Sem telefone';saveLeads();nextLead();toast('Marcado sem telefone','ok');}
 function startAutoQueue(){const fi=leads.findIndex(l=>!l.called);if(fi<0){toast('Todos os leads foram contatados!','ok');return;}selectLead(fi);}
 function resetQueue(){if(!confirm('Resetar fila?'))return;leads.forEach(l=>{l.called=false;l.attempts=0;});saveLeads();renderQueue();renderKanban();toast('Fila resetada','ok');}
-
-// ══ POWER DIALER ══
 function togglePD(){
   powerDialer=!powerDialer;
-  const el=document.getElementById('pd-pill');
-  document.getElementById('pd-lbl').textContent=powerDialer?'⚡ AUTO':'⏸ MANUAL';
-  powerDialer?el.classList.add('on'):el.classList.remove('on');
-  toast(powerDialer?'⚡ Auto-avanço ativado':'Modo manual','ok');
+  const pill=document.getElementById('auto-pill'),lbl=document.getElementById('auto-lbl');
+  if(powerDialer){pill.className='pill auto-on';lbl.textContent='⚡ AUTO';lbl.style.color='var(--green)';toast('⚡ Auto-avanço ativado','ok');}
+  else{pill.className='pill';lbl.textContent='⏸ MANUAL';lbl.style.color='var(--text3)';toast('Modo manual','ok');}
 }
 
 // ══ TIMER ══
-function startTimer(){timerInt=setInterval(()=>{const s=Math.floor((Date.now()-callStart)/1000);document.getElementById('timer-display').textContent=fmtTime(s);},1000);}
+function startTimer(){timerInt=setInterval(()=>{document.getElementById('timer-display').textContent=fmtTime(Math.floor((Date.now()-callStart)/1000));},1000);}
 function stopTimer(){clearInterval(timerInt);}
 function fmtTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-function startSessTimer(){sessInt=setInterval(()=>{const s=Math.floor((Date.now()-sessStart)/1000);document.getElementById('ss-time').textContent=fmtTime(s);},1000);}
+function startSessTimer(){sessInt=setInterval(()=>{document.getElementById('ss-time').textContent=fmtTime(Math.floor((Date.now()-sessStart)/1000));},1000);}
 
-// ══ KANBAN SIDEBAR ══
+// ══ KANBAN ══
 function renderKanban(){
   const body=document.getElementById('ks-pipe');
   document.getElementById('ks-sync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   body.innerHTML=STAGES.map(stage=>{
-    const sl=leads.filter(l=>l.stage===stage);
-    const c=STAGE_COLORS[stage]||'#7a94b0';
+    const sl=leads.filter(l=>l.stage===stage),c=STAGE_COLORS[stage]||'#7a94b0';
     return`<div class="ks-stage" style="border-left-color:${c}">
-      <div class="ks-st-hdr">
-        <span class="ks-st-name" style="color:${c}">${stage}</span>
-        <span class="ks-badge" style="background:${c}22;color:${c}">${sl.length}</span>
-      </div>
-      ${sl.length?`<div class="ks-cards">${sl.slice(0,6).map(l=>{
-        const gi=leads.indexOf(l);
-        const act=gi===curIdx;
-        return`<div class="ks-card" style="${act?'border-color:var(--green);background:rgba(0,232,122,.05)':''}" onclick="selectLead(${gi})">
-          <div class="ks-card-name">${l.name}</div>
-          <div class="ks-card-meta">${l.company||'—'} · ${l.attempts}x</div>
-        </div>`;
-      }).join('')}${sl.length>6?`<div class="ks-more">+${sl.length-6} mais</div>`:''}</div>`:`<div class="ks-empty-st">Vazio</div>`}
+      <div class="ks-st-hdr"><span class="ks-st-name" style="color:${c}">${stage}</span><span class="ks-badge" style="background:${c}22;color:${c}">${sl.length}</span></div>
+      ${sl.length?`<div class="ks-cards">${sl.slice(0,6).map(l=>{const gi=leads.indexOf(l),act=gi===curIdx;return`<div class="ks-card" style="${act?'border-color:var(--green)':''}" onclick="selectLead(${gi})"><div class="ks-card-name">${l.name}</div><div class="ks-card-meta">${l.company||'—'} · ${l.attempts}x</div></div>`;}).join('')}${sl.length>6?`<div class="ks-more">+${sl.length-6}</div>`:''}</div>`:`<div class="ks-empty-st">Vazio</div>`}
     </div>`;
   }).join('');
+}
+
+function renderOnlineTab(calls){
+  const body=document.getElementById('ks-online');
+  if(!calls||!calls.length){body.innerHTML='<div style="font-size:11px;color:var(--text3);text-align:center;padding:24px">📡 Nenhuma chamada ativa.<br><span style="font-size:9px">Atualiza a cada 3s durante ligações.</span></div>';return;}
+  body.innerHTML=calls.map(c=>`<div class="live-call-item"><div class="lci-top"><span class="lci-ramal">Ramal ${c.ramal_origem||c.ramal||'—'}</span><span class="lci-dest">${c.numero_destino||c.destino||'—'}</span></div><div class="lci-meta">${c.status||c.situacao||'Em chamada'} ${c.duracao?'· '+c.duracao:''}</div></div>`).join('');
 }
 
 function renderHist(){
   const body=document.getElementById('ks-hist');
-  if(!history.length){body.innerHTML='<div style="font-size:11px;color:var(--text3);text-align:center;padding:20px">Nenhuma ligação ainda</div>';return;}
-  body.innerHTML=history.slice(0,20).map(h=>{
-    const c=RESULT_COLORS[h.result]||'var(--text3)';
-    return`<div class="ks-hist">
-      <div class="ks-hist-top"><span class="ks-hist-name">${h.leadName}</span><span class="ks-hist-result" style="color:${c}">${h.result}</span></div>
-      <div class="ks-hist-meta">${h.time} · ${h.duration}${h.company?' · '+h.company:''}</div>
-    </div>`;
-  }).join('');
+  body.innerHTML=`<button class="load-pabx-btn" id="btn-pabx-hist" onclick="loadPabxHistorico()">📋 Carregar histórico PABX (hoje)</button>`;
+  if(!hist.length){body.innerHTML+='<div style="font-size:11px;color:var(--text3);text-align:center;padding:20px">Nenhuma ligação ainda</div>';return;}
+  body.innerHTML+=hist.slice(0,25).map(h=>{const c=RES_COLORS[h.result]||'var(--text3)';return`<div class="ks-hist${h.fromPabx?' pabx':''}"><div class="ks-hist-top"><span class="ks-hist-name">${h.leadName}</span><span class="ks-hist-result" style="color:${c}">${h.result}</span></div><div class="ks-hist-meta">${h.time} · ${h.duration}${h.company?' · '+h.company:''}</div>${h.fromPabx?'<div class="ks-hist-tag">PABX</div>':''}</div>`;}).join('');
 }
 
-function setKsTab(tab,el){
-  document.getElementById('ks-pipe').style.display=tab==='pipeline'?'block':'none';
-  document.getElementById('ks-hist').style.display=tab==='historico'?'block':'none';
-  document.querySelectorAll('.ks-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-}
+function setKsTab(tab,el){['pipe','online','hist'].forEach(t=>{document.getElementById('ks-'+t).style.display='none';});document.getElementById('ks-'+tab).style.display='block';document.querySelectorAll('.ks-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');if(tab==='online')renderOnlineTab(liveCalls);}
 
-// ══ RD SYNC ══
-async function syncRD(){
-  if(!cfg.rdToken){toast('Configure o token do RD Station','err');openSettings();return;}
-  toast('Sincronizando...','ok');
-  try{
-    const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'rd',payload:{endpoint:`deals?deal_pipeline_id=${cfg.pipeId}&limit=50`,method:'GET'},token:cfg.rdToken})});
-    const data=await res.json();
-    const deals=data.deals||[];
-    if(!deals.length){toast('Nenhum deal encontrado','err');return;}
-    leads=deals.map(d=>({id:d._id||d.id,name:d.contacts?.[0]?.name||d.name||'Lead',company:d.organization?.name||'',phone:d.contacts?.[0]?.phones?.[0]?.phone||'',stage:d.deal_stage?.name||'Sem Contato/Lead',attempts:0,called:false,dealId:d._id||d.id,notes:d.last_activity_type||''}));
-    saveLeads();renderQueue();renderKanban();
-    toast(`✅ ${leads.length} leads sincronizados!`,'ok');
-  }catch(e){toast('Erro: '+e.message,'err');}
-}
+// ══ RD STATION ══
+async function syncRD(){if(!cfg.rdToken){toast('Configure o token do RD Station','err');openSettings();return;}toast('Sincronizando...','ok');try{const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'rd',payload:{endpoint:`deals?deal_pipeline_id=${cfg.pipeId}&limit=50`,method:'GET'},token:cfg.rdToken})});const data=await res.json();const deals=data.deals||[];if(!deals.length){toast('Nenhum deal encontrado','err');return;}leads=deals.map(d=>({id:d._id||d.id,name:d.contacts?.[0]?.name||d.name||'Lead',company:d.organization?.name||'',phone:d.contacts?.[0]?.phones?.[0]?.phone||'',stage:d.deal_stage?.name||'Sem Contato/Lead',attempts:0,called:false,dealId:d._id||d.id,notes:''}));saveLeads();renderQueue();renderKanban();toast(`✅ ${leads.length} leads sincronizados!`,'ok');}catch(e){toast('Erro: '+e.message,'err');}}
 
 // ══ SETTINGS ══
-function openSettings(){document.getElementById('cfg-name').value=cfg.name;document.getElementById('cfg-rd').value=cfg.rdToken;document.getElementById('cfg-pipe').value=cfg.pipeId;document.getElementById('cfg-delay').value=cfg.delay;document.getElementById('cfg-modal').classList.add('on');}
+function openSettings(){document.getElementById('cfg-name').value=cfg.name;document.getElementById('cfg-rd').value=cfg.rdToken;document.getElementById('cfg-pipe').value=cfg.pipeId;document.getElementById('cfg-delay').value=cfg.delay;document.getElementById('cfg-ramal').value=cfg.ramal;document.getElementById('cfg-proxy').value=cfg.proxy;document.getElementById('cfg-modal').classList.add('on');}
 function closeCfg(){document.getElementById('cfg-modal').classList.remove('on');}
-function saveCfg(){
-  cfg.name=document.getElementById('cfg-name').value;
-  cfg.rdToken=document.getElementById('cfg-rd').value;
-  cfg.pipeId=document.getElementById('cfg-pipe').value;
-  cfg.delay=parseInt(document.getElementById('cfg-delay').value)||3;
-  LS.set('sdr_name',cfg.name);LS.set('rd_token',cfg.rdToken);LS.set('pipe_id',cfg.pipeId);LS.set('delay',cfg.delay);
-  updateSDR();closeCfg();toast('✅ Salvo!','ok');
-}
-function updateSDR(){
-  const n=cfg.name||'Configure o SDR';
-  document.getElementById('sdr-nm').textContent=n;
-  document.getElementById('sdr-av').textContent=n?n[0].toUpperCase():'?';
-}
+function saveCfg(){cfg.name=document.getElementById('cfg-name').value;cfg.rdToken=document.getElementById('cfg-rd').value;cfg.pipeId=document.getElementById('cfg-pipe').value;cfg.delay=parseInt(document.getElementById('cfg-delay').value)||3;cfg.ramal=parseInt(document.getElementById('cfg-ramal').value)||201;cfg.proxy=document.getElementById('cfg-proxy').value.trim();LS.set('sdr_name',cfg.name);LS.set('rd_token',cfg.rdToken);LS.set('pipe_id',cfg.pipeId);LS.set('delay',cfg.delay);LS.set('ramal',cfg.ramal);LS.set('proxy',cfg.proxy);updateSDR();closeCfg();toast('✅ Salvo!','ok');}
+function updateSDR(){const n=cfg.name||'Configure o SDR';document.getElementById('sdr-nm').textContent=n;document.getElementById('sdr-av').textContent=n?n[0].toUpperCase():'?';}
 
-// ══ ADD LEAD ══
+// ADD LEAD
 function openAddLead(){document.getElementById('add-modal').classList.add('on');}
 function closeAdd(){document.getElementById('add-modal').classList.remove('on');}
-function addLead(){
-  const name=document.getElementById('al-name').value.trim();
-  const phone=document.getElementById('al-phone').value.trim();
-  if(!name){toast('Informe o nome','err');return;}
-  leads.push({id:'m'+Date.now(),name,phone,company:document.getElementById('al-co').value.trim(),stage:document.getElementById('al-stg').value,attempts:0,called:false,dealId:null,notes:''});
-  saveLeads();renderQueue();renderKanban();closeAdd();toast('Lead adicionado!','ok');
-  ['al-name','al-phone','al-co'].forEach(i=>document.getElementById(i).value='');
-}
+function addLead(){const name=document.getElementById('al-name').value.trim(),phone=document.getElementById('al-phone').value.trim();if(!name){toast('Informe o nome','err');return;}leads.push({id:'m'+Date.now(),name,phone,company:document.getElementById('al-co').value.trim(),stage:document.getElementById('al-stg').value,attempts:0,called:false,dealId:null,notes:''});saveLeads();renderQueue();renderKanban();closeAdd();toast('Lead adicionado!','ok');['al-name','al-phone','al-co'].forEach(i=>document.getElementById(i).value='');}
 
-// ══ FILTER ══
 function filterLeads(){renderQueue();}
 function setFilter(f,el){curFilter=f;document.querySelectorAll('.qf').forEach(q=>q.classList.remove('active'));el.classList.add('active');renderQueue();}
-
-// ══ TOAST ══
-function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' on';setTimeout(()=>t.classList.remove('on'),3000);}
+function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' on';setTimeout(()=>t.classList.remove('on'),4000);}
 
 // ══ INIT ══
 window.onload=()=>{
   loadDemo();updateSDR();renderQueue();renderKanban();renderHist();startSessTimer();
-  if(!cfg.name)setTimeout(openSettings,800);
+  // PABX: auto-detect proxy e testa
+  const proxy=getPabxProxy();
+  if(proxy){
+    setTimeout(testPabx,1000); // testa só se tiver proxy (Vercel ou configurado)
+  }else{
+    // Rodando como file:// sem proxy configurado
+    setPabxSt('err');
+    document.getElementById('cors-banner').style.display='block';
+  }
+  if(!cfg.name)setTimeout(openSettings,600);
 };
 </script>
 </body>
