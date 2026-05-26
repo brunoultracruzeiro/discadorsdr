@@ -568,9 +568,12 @@ const PABX_TOKEN='be6e3c68-9013-4701-b09e-e828466f9238';
 const PABX_USR='gestao-fitness-brasil-api';
 
 function getProxy(){
+  // Proxy manual configurado nas Settings tem prioridade
   if(cfg.proxy)return cfg.proxy;
+  // Se estiver em servidor web (Vercel, etc), usa /api/pabx do mesmo dominio - sem CORS
   if(window.location.protocol!=='file:'&&!['localhost','127.0.0.1'].includes(window.location.hostname))
     return window.location.origin+'/api/pabx';
+  // Local sem proxy: tenta acesso direto (mostrara erro de CORS claro)
   return null;
 }
 
@@ -579,12 +582,18 @@ async function pabxFetch(ep,opts={}){
   if(proxy){
     const body=opts.body?JSON.parse(opts.body):undefined;
     const r=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:ep,method:opts.method||'GET',body})});
-    const t=await r.text();try{return JSON.parse(t);}catch{return{raw:t};}
+    if(!r.ok)throw new Error('Proxy retornou HTTP '+r.status+' — verifique o Proxy URL nas ⚙');
+    const t=await r.text();
+    if(t.trim().startsWith('<'))throw new Error('Proxy inválido — retornou HTML. Verifique o Proxy URL nas ⚙');
+    try{return JSON.parse(t);}catch{return{raw:t};}
   }else{
     const h={'accept':'application/json','usuario':PABX_USR,'token':PABX_TOKEN};
     if(opts.method==='POST')h['Content-Type']='application/json';
     const r=await fetch(PABX_BASE+ep,{...opts,headers:h});
-    const t=await r.text();try{return JSON.parse(t);}catch{return{raw:t};}
+    if(!r.ok)throw new Error('PABX retornou HTTP '+r.status);
+    const t=await r.text();
+    if(t.trim().startsWith('<'))throw new Error('PABX retornou HTML — possível problema de CORS ou autenticação');
+    try{return JSON.parse(t);}catch{return{raw:t};}
   }
 }
 
@@ -604,14 +613,20 @@ function setPabxSt(st){
 }
 
 async function testPabx(){
-  setPabxSt('dialing');toast('🔌 Testando PABX...','ok');
+  setPabxSt('dialing');toast('🔌 Testando conexão PABX...','ok');
   try{
     const d=await pabxFetch('/listar_chamadas_online');
-    if(d.raw&&d.raw.includes('<html'))throw new Error('Proxy não encontrado');
-    setPabxSt('ok');toast('✅ PABX conectado!','ok');
+    if(d.raw)throw new Error('Resposta inesperada: '+String(d.raw).slice(0,60));
+    setPabxSt('ok');toast('✅ PABX conectado e respondendo!','ok');
   }catch(e){
     setPabxSt('err');
-    toast(e.message.includes('fetch')?'⚠ Configure o Proxy URL nas ⚙':'❌ '+e.message.slice(0,60),'err');
+    const msg=e.message||'';
+    if(msg.includes('Failed to fetch')||msg.includes('NetworkError'))
+      toast('❌ CORS: acesso direto bloqueado. Configure um Proxy URL nas ⚙','err');
+    else if(msg.includes('Proxy'))
+      toast('❌ '+msg,'err');
+    else
+      toast('❌ PABX: '+msg.slice(0,70),'err');
   }
 }
 
@@ -720,26 +735,40 @@ async function dialCurrent(){
 
   const phone=fmtPABX(l.phone),ramal=cfg.ramal||201;
 
+  // Validação básica
+  if(!ramal||ramal<100){
+    btn.disabled=false;
+    document.getElementById('btn-call-txt').textContent='Ligar — '+fmtPhone(l.phone);
+    setPabxSt('err');
+    toast('❌ Ramal inválido — configure o ramal nas ⚙','err');
+    return;
+  }
+
   try{
     const res=await pabxDial(phone,ramal);
+    // Detecta resposta com raw (não parseável) ou erro explícito
+    if(res.raw){
+      throw new Error('Resposta inesperada do PABX: '+String(res.raw).slice(0,80));
+    }
     const isErr=res.status==='error'||res.erro||res.error;
-    if(isErr)throw new Error(res.message||res.mensagem||'Erro PABX');
+    if(isErr)throw new Error(res.message||res.mensagem||res.erro||'Erro PABX sem mensagem');
     setCallState('calling');
     l.attempts++;LS.set('leads',JSON.stringify(leads));
     setPabxSt('calling');
-    toast(`📞 Discando ramal ${ramal}...`,'ok');
+    toast(`📞 Discando ramal ${ramal} → ${fmtPhone(l.phone)}`,'ok');
   }catch(e){
-    const cors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError');
+    const cors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError')||e.message.includes('CORS');
     btn.disabled=false;
     document.getElementById('btn-call-txt').textContent='Ligar — '+fmtPhone(l.phone);
     setPabxSt('err');
     if(cors){
-      // Fallback tel:
+      // Fallback tel: — abre o discador nativo
       const a=document.createElement('a');a.href='tel:'+phone;a.click();
       setCallState('calling');l.attempts++;LS.set('leads',JSON.stringify(leads));
-      toast('⚠ Fallback tel: — PABX offline','warn');
+      toast('⚠ PABX offline — abrindo discador do celular','warn');
     }else{
-      toast('❌ PABX: '+e.message.slice(0,70),'err');
+      console.error('[PABX dialCurrent]',e);
+      toast('❌ PABX: '+e.message.slice(0,80),'err');
     }
   }
 }
