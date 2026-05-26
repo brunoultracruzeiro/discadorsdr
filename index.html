@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GFB — Power Dialer + PABX</title>
+<title>GFB — Power Dialer</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080a0f;--bg2:#0c0f16;--panel:#0f1319;--panel2:#131820;
-  --border:#1a2232;--border2:#1f2a3d;
-  --green:#00e87a;--green-glow:rgba(0,232,122,.15);
+  --bg:#07090e;--bg2:#0b0e15;--panel:#0e1118;--panel2:#121720;
+  --border:#182030;--border2:#1e2a40;
+  --green:#00e87a;--glow:rgba(0,232,122,.15);
   --blue:#1d6fff;--blue2:#4d93ff;--orange:#ff8c00;
   --red:#ff3355;--yellow:#ffd600;--purple:#8b5cf6;
   --text:#e8f0fa;--text2:#7a94b0;--text3:#3d5470;
@@ -18,231 +18,146 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
-body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
-.shell{display:grid;grid-template-columns:52px 232px 1fr 316px;height:100vh}
 
-/* NAV */
-.icon-nav{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px}
-.nav-logo{width:30px;height:30px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#000;margin-bottom:14px;box-shadow:0 0 16px var(--green-glow)}
-.nav-ico{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:.15s;color:var(--text3)}
-.nav-ico:hover{background:var(--panel2);color:var(--text2)}
-.nav-bottom{margin-top:auto}
+/* ── TABS ── */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:13px 8px;text-align:center;font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--green);border-bottom-color:var(--green);background:rgba(0,232,122,.04)}
+.tab-badge{background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-family:var(--mono)}
 
-/* QUEUE */
-.queue-panel{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.qp-header{padding:14px 12px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
-.qp-title{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
-.qp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px}
-.qs{background:var(--panel2);border-radius:7px;padding:7px 5px;text-align:center;border:1px solid var(--border)}
-.qs-val{font-size:17px;font-weight:800;line-height:1}
-.qs-lbl{font-size:8px;color:var(--text3);letter-spacing:1px;margin-top:2px;font-family:var(--mono)}
-.qp-search{display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border2);border-radius:7px;padding:6px 10px}
-.qp-search input{background:transparent;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:11px;flex:1}
-.qp-search input::placeholder{color:var(--text3)}
-.queue-filters{display:flex;gap:4px;padding:9px 12px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
-.qf{padding:3px 9px;border-radius:20px;border:1px solid var(--border2);font-size:10px;font-weight:600;color:var(--text3);cursor:pointer;white-space:nowrap;transition:.15s}
-.qf:hover,.qf.active{border-color:var(--green);color:var(--green)}
-.qf.active{background:var(--green-glow)}
-.queue-list{flex:1;overflow-y:auto;padding:7px 9px}
-.lead-card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px;margin-bottom:5px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
-.lead-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border2);transition:.2s}
-.lead-card.active{border-color:rgba(0,232,122,.4);background:rgba(0,232,122,.04)}
-.lead-card.active::before{background:var(--green)}
-.lead-card.calling::before{background:var(--yellow);animation:pb 1s infinite}
-.lead-card.done{opacity:.55}.lead-card.done::before{background:var(--blue2)}
-@keyframes pb{0%,100%{opacity:1}50%{opacity:.3}}
-.lc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
-.lc-name{font-size:12px;font-weight:700}
-.lc-att{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:3px;background:var(--panel);border:1px solid var(--border);color:var(--text3)}
-.lc-att.hot{background:rgba(255,51,85,.1);border-color:rgba(255,51,85,.3);color:var(--red)}
-.lc-phone{font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:4px}
-.lc-stage{display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 7px;border-radius:20px;background:var(--panel);border:1px solid var(--border);color:var(--text3)}
-.lc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-
-/* MAIN */
-.main-area{background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
-.main-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2);gap:8px}
-.mt-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.sdr-sel{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border2);border-radius:7px;padding:5px 9px;cursor:pointer;flex-shrink:0}
-.sdr-av{width:20px;height:20px;border-radius:5px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800}
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 18px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px}
+.tb-left{display:flex;align-items:center;gap:8px}
+.tb-logo{width:28px;height:28px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#000;flex-shrink:0;box-shadow:0 0 12px var(--glow)}
+.sdr-chip{display:flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;cursor:pointer}
+.sdr-av{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0}
 .sdr-nm{font-size:11px;font-weight:600}
-.ss{display:flex;gap:10px;flex-shrink:0}
-.ss-item{font-family:var(--mono);font-size:10px;color:var(--text3)}
-.ss-item b{color:var(--text2)}
-.mt-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.tbtn{background:var(--panel);border:1px solid var(--border2);color:var(--text2);padding:5px 11px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
-.tbtn:hover{border-color:var(--green);color:var(--green)}
+.ss{display:flex;gap:10px}
+.ss-i{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.ss-i b{color:var(--text)}
+.tb-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;background:var(--panel);transition:.2s}
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:.3s}
+.plbl{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text3)}
+.pill.pok .pdot{background:var(--green);box-shadow:0 0 5px var(--glow)}
+.pill.pok .plbl{color:var(--green)}
+.pill.perr .pdot{background:var(--red)}.pill.perr .plbl{color:var(--red)}
+.pill.pcon .pdot{background:var(--orange);animation:blink .4s infinite}.pill.pcon .plbl{color:var(--orange)}
+.pill.pcall .pdot{background:var(--yellow);animation:blink .7s infinite}.pill.pcall .plbl{color:var(--yellow)}
+.pill.pon{border-color:var(--green)}.pill.pon .pdot{background:var(--green);box-shadow:0 0 5px var(--glow)}.pill.pon .plbl{color:var(--green)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ico-btn{width:32px;height:32px;background:var(--panel);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:.15s}
+.ico-btn:hover{border-color:var(--green)}
 
-/* Pills */
-.pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;transition:.2s;background:var(--panel);white-space:nowrap}
-.pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:.3s}
-.pill-lbl{font-family:var(--mono);font-size:10px;font-weight:700;transition:.2s;color:var(--text3)}
-/* PABX pill states */
-.pill.pabx-ok{border-color:var(--green);background:rgba(0,232,122,.07)}
-.pill.pabx-ok .pill-dot{background:var(--green);box-shadow:0 0 6px var(--green-glow)}
-.pill.pabx-ok .pill-lbl{color:var(--green)}
-.pill.pabx-err{border-color:rgba(255,51,85,.4);background:rgba(255,51,85,.05)}
-.pill.pabx-err .pill-dot{background:var(--red)}
-.pill.pabx-err .pill-lbl{color:var(--red)}
-.pill.pabx-calling .pill-dot{background:var(--yellow);animation:pb .7s infinite}
-.pill.pabx-calling .pill-lbl{color:var(--yellow)}
-.pill.pabx-connecting .pill-dot{background:var(--orange);animation:pb .4s infinite}
-.pill.pabx-connecting .pill-lbl{color:var(--orange)}
-/* AUTO pill */
-.pill.auto-on{border-color:var(--green);background:rgba(0,232,122,.07)}
-.pill.auto-on .pill-dot{background:var(--green);box-shadow:0 0 5px var(--green-glow)}
-.pill.auto-on .pill-lbl{color:var(--green)}
+/* ── PAGE SHELL ── */
+.page{display:none;flex-direction:column;flex:1;overflow:hidden}
+.page.active{display:flex}
+.shell{display:flex;flex-direction:column;height:100vh}
 
-/* CORS ALERT BANNER */
-.cors-banner{background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.3);border-radius:9px;padding:12px 16px;margin:14px 18px;display:none}
-.cors-banner-title{font-size:12px;font-weight:800;color:var(--orange);margin-bottom:4px}
-.cors-banner-text{font-size:11px;color:var(--text2);line-height:1.6}
-.cors-banner code{background:var(--panel2);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:10px;color:var(--yellow)}
-.cors-banner-btns{display:flex;gap:7px;margin-top:10px}
-.cors-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid;transition:.15s;font-family:var(--sans)}
-.cors-btn-copy{border-color:rgba(255,140,0,.5);color:var(--orange);background:rgba(255,140,0,.08)}
-.cors-btn-copy:hover{background:rgba(255,140,0,.18)}
-.cors-btn-skip{border-color:var(--border2);color:var(--text3);background:transparent}
-.cors-btn-skip:hover{border-color:var(--text2);color:var(--text2)}
+/* ══════════════════════════════
+   DISCADOR PAGE
+══════════════════════════════ */
+.dialer-page{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;max-width:580px;margin:0 auto;width:100%}
 
-/* EMPTY */
-.state-empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text3)}
-.btn-start{background:var(--green);color:#000;border:none;padding:11px 22px;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 0 28px var(--green-glow);transition:.2s}
-.btn-start:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(0,232,122,.3)}
+/* Progress */
+.progress-wrap{width:100%;display:flex;align-items:center;gap:10px}
+.pb-track{flex:1;height:5px;background:var(--border2);border-radius:3px;overflow:hidden}
+.pb-fill{height:100%;background:var(--green);border-radius:3px;transition:width .5s ease}
+.pb-label{font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap}
+.pb-label b{color:var(--green)}
 
-/* CALL SCREEN */
-.call-screen{flex:1;display:flex;flex-direction:column;padding:14px 18px;gap:11px;overflow-y:auto}
+/* Lead card */
+.lead-card{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px 28px 22px;position:relative;overflow:hidden}
+.lead-card::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,232,122,.06),transparent 70%)}
+.lc-name{font-size:32px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px;line-height:1}
+.lc-company{font-size:14px;color:var(--text2);margin-bottom:14px}
+.lc-phone{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--text);margin-bottom:6px}
+.lc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.lc-stage{font-size:9px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono)}
+.lc-att{font-size:9px;padding:3px 10px;border-radius:20px;background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.2);color:var(--yellow);font-family:var(--mono)}
 
-/* Lead hero */
-.lead-hero{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:14px;position:relative;overflow:hidden;flex-shrink:0}
-.lead-hero::after{content:'';position:absolute;top:-28px;right:-28px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,232,122,.07),transparent 70%)}
-.lh-name{font-size:21px;font-weight:800;margin-bottom:3px;line-height:1.1}
-.lh-co{font-size:12px;color:var(--text2);margin-bottom:10px}
-.lh-row{display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:4px}
-.lh-ico{width:22px;height:22px;border-radius:5px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-.lh-val{font-weight:600}
-.lh-lbl{color:var(--text3);font-size:10px}
-.lh-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
-.att-box{background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;text-align:center}
-.att-num{font-size:22px;font-weight:900;font-family:var(--mono);color:var(--green);line-height:1}
-.att-lbl{font-size:8px;letter-spacing:1.5px;color:var(--text3);margin-top:1px}
-.lh-stg{font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid rgba(29,111,255,.4);color:var(--blue2);background:rgba(29,111,255,.08);font-family:var(--mono)}
-.rd-lnk{font-family:var(--mono);font-size:9px;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;transition:.15s}
-.rd-lnk:hover{color:var(--blue2);border-color:var(--blue2)}
+/* Calling state */
+.call-status{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.cs-left{display:flex;align-items:center;gap:10px}
+.cs-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cs-calling{background:var(--yellow);animation:blink .8s infinite}
+.cs-active{background:var(--green);animation:blink 1.2s infinite}
+.cs-info{font-family:var(--mono);font-size:11px;font-weight:600}
+.cs-sub{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px}
+.timer-big{font-family:var(--mono);font-size:28px;font-weight:800;color:var(--yellow)}
 
-/* Controls */
-.call-controls{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;flex-shrink:0;overflow:hidden}
-.cc-idle,.cc-calling,.cc-ended{display:none;flex-direction:column;gap:9px}
+/* Result buttons — 2x2 GRANDES */
+.result-section{width:100%}
+.result-hint{font-size:10px;color:var(--text3);font-family:var(--mono);text-align:center;margin-bottom:8px}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.r-btn{padding:18px 12px;border-radius:12px;border:2px solid var(--border2);background:var(--panel);font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer;transition:.2s;text-align:center;color:var(--text2);line-height:1.3}
+.r-btn:hover{transform:translateY(-2px)}
+.r-btn .r-icon{font-size:24px;display:block;margin-bottom:4px}
+.r-btn.rb-agendou{border-color:var(--green);background:rgba(0,232,122,.08);color:var(--green)}
+.r-btn.rb-nao-agendou{border-color:var(--yellow);background:rgba(255,214,0,.07);color:var(--yellow)}
+.r-btn.rb-remarcar{border-color:var(--blue2);background:rgba(77,147,255,.08);color:var(--blue2)}
+.r-btn.rb-nao-atendeu{border-color:var(--text3);background:var(--panel);color:var(--text3)}
+.r-btn.rb-nao-atendeu:hover{border-color:var(--red);color:var(--red)}
 
-/* PABX bar */
-.pabx-bar{display:flex;align-items:center;justify-content:space-between;border-radius:8px;padding:8px 13px;transition:.3s}
-.pabx-bar.bar-dialing{background:rgba(255,140,0,.07);border:1px solid rgba(255,140,0,.2)}
-.pabx-bar.bar-calling{background:rgba(0,232,122,.06);border:1px solid rgba(0,232,122,.2)}
-.pabx-bar.bar-err{background:rgba(255,51,85,.05);border:1px solid rgba(255,51,85,.15)}
-.pabx-bar.bar-tel{background:rgba(77,147,255,.06);border:1px solid rgba(77,147,255,.2)}
-.pabx-bar-l{display:flex;align-items:center;gap:8px}
-.pabx-bar-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.pabx-bar-dot.bdialing{background:var(--orange);animation:pb .4s infinite}
-.pabx-bar-dot.bcalling{background:var(--green);box-shadow:0 0 5px var(--green-glow);animation:pb .9s infinite}
-.pabx-bar-dot.berr{background:var(--red)}
-.pabx-bar-dot.btel{background:var(--blue2)}
-.pabx-bar-info{font-family:var(--mono);font-size:10px;font-weight:600}
-.pabx-bar-sub{font-family:var(--mono);font-size:9px;color:var(--text3)}
+/* Pause buttons */
+.pause-row{display:flex;gap:7px;width:100%}
+.pause-btn{flex:1;padding:9px 6px;border-radius:9px;border:1px solid var(--border2);background:var(--panel);font-family:var(--sans);font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;transition:.15s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px}
+.pause-btn .p-icon{font-size:16px}
+.pause-btn:hover{border-color:var(--orange);color:var(--orange)}
 
-/* Big call button */
-.big-call-btn{background:var(--green);color:#000;border:none;padding:13px;border-radius:10px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 32px var(--green-glow);transition:.2s}
-.big-call-btn:hover{transform:translateY(-1px);box-shadow:0 0 48px rgba(0,232,122,.35)}
-.big-call-btn:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed;box-shadow:none;transform:none}
-.skip-row{display:flex;gap:6px}
+/* Start queue button */
+.start-btn{width:100%;padding:16px;border-radius:12px;background:var(--green);color:#000;border:none;font-family:var(--sans);font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 0 32px var(--glow);transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.start-btn:hover{transform:translateY(-1px);box-shadow:0 0 48px rgba(0,232,122,.35)}
 
-/* Timer */
-.timer-bar{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border-radius:8px;padding:9px 13px}
-.timer-display{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--yellow)}
-.timer-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pb .8s infinite;flex-shrink:0}
+/* Empty */
+.dialer-empty{width:100%;text-align:center;padding:40px 20px;color:var(--text3)}
+.dialer-empty .e-icon{font-size:56px;opacity:.3;margin-bottom:16px}
+.dialer-empty .e-title{font-size:20px;font-weight:700;color:var(--text2);margin-bottom:8px}
+.dialer-empty .e-sub{font-size:12px;line-height:1.7;max-width:280px;margin:0 auto 20px}
 
-/* Result buttons */
-.result-hint{font-size:10px;text-align:center;color:var(--text3);font-family:var(--mono)}
-.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.result-btn{background:var(--panel2);border:1.5px solid var(--border2);color:var(--text2);padding:13px 8px;border-radius:9px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;text-align:center;line-height:1.4}
-.result-btn:hover{transform:translateY(-1px);background:var(--bg2)}
-.result-btn small{font-size:9px;opacity:.6;display:block;margin-top:2px}
-.r-agendou{border-color:var(--green)!important;background:rgba(0,232,122,.1)!important;color:var(--green)!important}
-.r-nao{border-color:var(--yellow)!important;background:rgba(255,214,0,.07)!important;color:var(--yellow)!important}
-.r-remarcar{border-color:var(--blue2)!important;background:rgba(77,147,255,.08)!important;color:var(--blue2)!important}
-.r-desq{border-color:var(--red)!important;background:rgba(255,51,85,.08)!important;color:var(--red)!important}
-.r-contato{border-color:var(--purple)!important;background:rgba(139,92,246,.08)!important;color:var(--purple)!important}
-.r-postal{border-color:var(--orange)!important;background:rgba(255,140,0,.08)!important;color:var(--orange)!important}
-.enc-btn{background:rgba(255,51,85,.07);border:1.5px solid rgba(255,51,85,.25);color:var(--red);padding:9px;border-radius:8px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:5px}
-.enc-btn:hover{background:rgba(255,51,85,.16)}
+/* ══════════════════════════════
+   OVERLAYS
+══════════════════════════════ */
 
-/* Ended */
-.ended-sum{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--panel2);border-radius:8px;border:1px solid var(--border)}
-.ended-act{display:flex;gap:6px}
-.btn-nxt{flex:1;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border:none;padding:11px;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:800;cursor:pointer}
-.btn-nxt:hover{opacity:.9}
-.btn-recall{background:var(--panel2);border:1px solid var(--border2);color:var(--text2);padding:11px 14px;border-radius:8px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
-.btn-recall:hover{border-color:var(--green);color:var(--green)}
-/* Ended result buttons (select after hangup) */
-.ended-result-prompt{font-size:10px;text-align:center;color:var(--text3);font-family:var(--mono);margin-bottom:2px}
+/* Pause overlay */
+.pause-overlay{position:fixed;inset:0;z-index:200;background:rgba(7,9,14,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(4px)}
+.po-icon{font-size:72px;line-height:1}
+.po-type{font-size:13px;letter-spacing:3px;text-transform:uppercase;font-family:var(--mono);color:var(--text3)}
+.po-label{font-size:32px;font-weight:900;color:var(--text)}
+.po-timer{font-size:64px;font-weight:900;font-family:var(--mono);color:var(--orange)}
+.po-resume{background:var(--green);color:#000;border:none;padding:14px 36px;border-radius:12px;font-family:var(--sans);font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 0 28px var(--glow);margin-top:8px;transition:.2s}
+.po-resume:hover{transform:translateY(-1px)}
 
-/* COUNTDOWN */
-.cd-overlay{position:absolute;inset:0;background:rgba(8,10,15,.96);border-radius:12px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:20;backdrop-filter:blur(3px)}
-.cd-badge{font-size:11px;font-weight:700;padding:4px 13px;border-radius:20px;border:1px solid;font-family:var(--mono)}
+/* Countdown overlay */
+.cd-overlay{position:fixed;inset:0;z-index:150;background:rgba(7,9,14,.95);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;backdrop-filter:blur(3px)}
+.cd-result{font-size:12px;font-weight:700;padding:5px 16px;border-radius:20px;border:1px solid;font-family:var(--mono)}
 .cd-lbl{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono)}
-.cd-num{font-size:76px;font-weight:900;font-family:var(--mono);color:var(--green);line-height:1;animation:cdp 1s ease infinite}
-@keyframes cdp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.07);opacity:.65}}
-.cd-next{background:var(--panel2);border:1px solid var(--border2);border-radius:9px;padding:9px 16px;text-align:center;min-width:190px}
-.cd-next-lbl{font-size:8px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-family:var(--mono);margin-bottom:3px}
-.cd-next-name{font-size:14px;font-weight:800}
-.cd-next-co{font-size:10px;color:var(--text2);margin-top:1px}
-.cd-cancel{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:6px 16px;border-radius:7px;font-family:var(--sans);font-size:11px;cursor:pointer;transition:.15s}
+.cd-num{font-size:120px;font-weight:900;font-family:var(--mono);color:var(--green);line-height:1;animation:cdp 1s ease infinite}
+@keyframes cdp{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.cd-next{background:var(--panel2);border:1px solid var(--border2);border-radius:10px;padding:12px 22px;text-align:center}
+.cd-next-lbl{font-size:8px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono);margin-bottom:4px}
+.cd-next-name{font-size:18px;font-weight:900}
+.cd-next-phone{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px}
+.cd-cancel{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:7px 18px;border-radius:7px;font-family:var(--sans);font-size:11px;cursor:pointer;transition:.15s}
 .cd-cancel:hover{border-color:var(--red);color:var(--red)}
 
-/* KANBAN SIDEBAR */
-.kanban-side{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.ks-hdr{padding:13px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
-.ks-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-.ks-ttl{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
-.ks-sync{font-family:var(--mono);font-size:9px;color:var(--text3)}
-.ks-tabs{display:flex}
-.ks-tab{flex:1;padding:6px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:var(--mono)}
-.ks-tab.active{color:var(--green);border-bottom-color:var(--green)}
-.ks-body{flex:1;overflow-y:auto;padding:9px}
-.ks-stage{background:var(--panel2);border:1px solid var(--border);border-left:3px solid transparent;border-radius:7px;margin-bottom:6px;overflow:hidden}
-.ks-st-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 9px}
-.ks-st-name{font-size:10px;font-weight:700}
-.ks-badge{font-family:var(--mono);font-size:9px;padding:1px 7px;border-radius:4px;font-weight:700}
-.ks-cards{padding:0 6px 6px}
-.ks-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:6px 8px;margin-bottom:3px;cursor:pointer;transition:.15s}
-.ks-card:hover{border-color:var(--border2)}
-.ks-card-name{font-size:11px;font-weight:700;margin-bottom:1px}
-.ks-card-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
-.ks-empty-st{font-size:10px;color:var(--text3);text-align:center;padding:5px 8px 8px}
-.ks-more{font-size:9px;color:var(--text3);text-align:center;padding:3px;font-family:var(--mono)}
-.ks-hist{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 9px;margin-bottom:5px;border-left:3px solid transparent}
-.ks-hist.pabx{border-left-color:var(--blue2)}
-.ks-hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
-.ks-hist-name{font-size:11px;font-weight:700}
-.ks-hist-result{font-size:10px;font-weight:700;font-family:var(--mono)}
-.ks-hist-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
-.ks-hist-tag{font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:3px;background:rgba(29,111,255,.1);color:var(--blue2);margin-top:3px;display:inline-block}
-.load-pabx-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:rgba(29,111,255,.08);border:1px solid rgba(29,111,255,.2);color:var(--blue2);padding:8px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:.15s;margin-bottom:8px}
-.load-pabx-btn:hover{background:rgba(29,111,255,.16)}
-.live-call-item{background:var(--panel2);border:1px solid rgba(255,214,0,.25);border-left:3px solid var(--yellow);border-radius:7px;padding:8px 10px;margin-bottom:5px}
-.lci-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
-.lci-ramal{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--yellow)}
-.lci-dest{font-family:var(--mono);font-size:10px;color:var(--text2)}
-.lci-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
+/* Alert overlay (scheduled call) */
+.alert-overlay{position:fixed;inset:0;z-index:300;background:rgba(7,9,14,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(6px)}
+.ao-ring{font-size:80px;animation:ring 1s ease infinite}
+@keyframes ring{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(10deg)}}
+.ao-title{font-size:14px;letter-spacing:2px;text-transform:uppercase;font-family:var(--mono);color:var(--yellow)}
+.ao-name{font-size:36px;font-weight:900;text-align:center}
+.ao-phone{font-family:var(--mono);font-size:18px;color:var(--text2)}
+.ao-note{font-size:12px;color:var(--text3);max-width:280px;text-align:center;font-style:italic}
+.ao-btns{display:flex;gap:10px;margin-top:8px}
+.ao-call{background:var(--green);color:#000;border:none;padding:13px 28px;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 0 24px var(--glow)}
+.ao-later{background:var(--panel);border:1px solid var(--border2);color:var(--text2);padding:13px 20px;border-radius:10px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer}
 
-::-webkit-scrollbar{width:3px;height:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-
-/* Modals */
-.modal-bg{display:none;position:fixed;inset:0;z-index:500;background:rgba(8,10,15,.87);backdrop-filter:blur(8px);align-items:center;justify-content:center}
+/* Remarcar modal */
+.modal-bg{display:none;position:fixed;inset:0;z-index:400;background:rgba(7,9,14,.87);backdrop-filter:blur(8px);align-items:center;justify-content:center}
 .modal-bg.on{display:flex}
-.modal{background:var(--panel);border:1px solid var(--border2);border-radius:15px;padding:24px;width:460px;max-width:90vw;max-height:90vh;overflow-y:auto}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:14px;padding:22px;width:380px;max-width:94vw}
 .modal-title{font-size:16px;font-weight:800;margin-bottom:4px}
 .modal-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
 .fg{margin-bottom:11px}
@@ -250,737 +165,980 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .fi{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:.15s}
 .fi:focus{border-color:var(--green)}
 .fi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fi-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.modal-btn{width:100%;background:var(--green);color:#000;border:none;padding:10px;border-radius:8px;font-family:var(--sans);font-weight:800;font-size:13px;cursor:pointer;margin-top:4px}
-.modal-cancel{width:100%;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px;border-radius:8px;font-family:var(--sans);font-weight:600;font-size:12px;cursor:pointer;margin-top:6px}
-.pabx-info-box{background:rgba(29,111,255,.06);border:1px solid rgba(29,111,255,.15);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:14px}
-.pabx-info-box code{background:var(--panel2);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:10px;color:var(--yellow)}
-.test-btn{background:rgba(29,111,255,.1);border:1px solid rgba(29,111,255,.3);color:var(--blue2);padding:8px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;width:100%}
-.test-btn:hover{background:rgba(29,111,255,.2)}
-.section-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-family:var(--mono);margin:14px 0 8px;display:flex;align-items:center;gap:8px}
-.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.modal-btn{width:100%;background:var(--green);color:#000;border:none;padding:11px;border-radius:9px;font-family:var(--sans);font-weight:800;font-size:13px;cursor:pointer}
+.modal-cancel{width:100%;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:9px;border-radius:9px;font-family:var(--sans);font-weight:600;font-size:12px;cursor:pointer;margin-top:7px}
+.sec-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-family:var(--mono);margin:12px 0 8px;display:flex;align-items:center;gap:8px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.info-box{border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.6;margin-bottom:12px;border:1px solid}
+.info-box.orange{background:rgba(255,140,0,.06);border-color:rgba(255,140,0,.2);color:var(--text2)}
+.info-box.blue{background:rgba(29,111,255,.06);border-color:rgba(29,111,255,.15);color:var(--text2)}
+.test-btn{background:rgba(29,111,255,.1);border:1px solid rgba(29,111,255,.25);color:var(--blue2);padding:8px;border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;width:100%}
 
-.toast{position:fixed;bottom:18px;right:18px;z-index:999;background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:8px 15px;font-size:12px;font-weight:600;opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none;max-width:320px}
-.toast.on{opacity:1;transform:translateY(0)}
+/* ══════════════════════════════
+   AGENDA PAGE
+══════════════════════════════ */
+.agenda-page{flex:1;overflow-y:auto;padding:16px}
+.agenda-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.agenda-title{font-size:16px;font-weight:800}
+.agenda-date{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.agenda-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.agenda-empty-icon{font-size:48px;opacity:.3;margin-bottom:12px}
+.sched-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.15s}
+.sched-card:hover{border-color:var(--border2)}
+.sched-card.due{border-color:var(--yellow);background:rgba(255,214,0,.05);animation:sc-pulse 2s infinite}
+@keyframes sc-pulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px rgba(255,214,0,.2)}}
+.sched-time{background:var(--panel2);border-radius:8px;padding:8px 12px;text-align:center;flex-shrink:0;min-width:64px}
+.sched-time-val{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--yellow);line-height:1}
+.sched-time-date{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px}
+.sched-time.past .sched-time-val{color:var(--text3)}
+.sched-time.now .sched-time-val{color:var(--yellow)}
+.sched-info{flex:1}
+.sched-name{font-size:14px;font-weight:800;margin-bottom:2px}
+.sched-phone{font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:3px}
+.sched-note{font-size:11px;color:var(--text3);font-style:italic}
+.sched-type{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px;flex-shrink:0}
+.sched-type.meeting{background:rgba(0,232,122,.1);border:1px solid rgba(0,232,122,.3);color:var(--green)}
+.sched-type.callback{background:rgba(77,147,255,.1);border:1px solid rgba(77,147,255,.3);color:var(--blue2)}
+.sched-del{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;transition:.15s;flex-shrink:0}
+.sched-del:hover{color:var(--red)}
+
+/* ══════════════════════════════
+   KANBAN PAGE
+══════════════════════════════ */
+.kanban-page{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.kanban-header{padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.kanban-header-title{font-size:15px;font-weight:800}
+.kanban-sync{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.kanban-board{flex:1;overflow-x:auto;overflow-y:hidden;padding:14px;display:flex;gap:11px;align-items:flex-start}
+.k-col{flex-shrink:0;width:200px;display:flex;flex-direction:column;gap:7px}
+.k-col-header{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;border:1px solid}
+.k-col-title{font-size:11px;font-weight:700}
+.k-count{font-family:var(--mono);font-size:10px;padding:1px 7px;border-radius:4px;font-weight:700}
+.k-cards{display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:calc(100vh - 220px)}
+.k-card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:.15s}
+.k-card:hover{border-color:var(--border2)}
+.k-card.active-call{border-color:var(--yellow);background:rgba(255,214,0,.04)}
+.k-card-name{font-size:12px;font-weight:700;margin-bottom:3px}
+.k-card-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.k-card-note{font-size:10px;color:var(--text2);margin-top:5px;padding:3px 6px;background:var(--panel);border-radius:4px}
+.k-empty{font-size:10px;color:var(--text3);text-align:center;padding:12px;font-family:var(--mono)}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);z-index:999;background:var(--panel);border:1px solid var(--border2);border-radius:9px;padding:9px 18px;font-size:12px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(0,232,122,.4);color:var(--green)}
 .toast.err{border-color:rgba(255,51,85,.4);color:var(--red)}
 .toast.warn{border-color:rgba(255,214,0,.4);color:var(--yellow)}
-
-@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.call-screen>*{animation:fu .24s ease both}
-.call-screen>*:nth-child(1){animation-delay:.04s}
-.call-screen>*:nth-child(2){animation-delay:.09s}
 </style>
 </head>
 <body>
-<div class="shell">
 
-<!-- NAV -->
-<div class="icon-nav">
-  <div class="nav-logo">G</div>
-  <div class="nav-ico" onclick="openSettings()" title="Configurações">⚙</div>
-  <div class="nav-ico" onclick="openAddLead()" title="Adicionar Lead">＋</div>
-  <div class="nav-ico" onclick="syncRD()" title="Sync RD Station">↺</div>
-  <div class="nav-ico nav-bottom" onclick="resetQueue()" title="Resetar Fila">⟳</div>
+<!-- ══ PAUSE OVERLAY ══ -->
+<div class="pause-overlay" id="pause-overlay">
+  <div class="po-icon" id="po-icon">⏸</div>
+  <div class="po-type">EM PAUSA</div>
+  <div class="po-label" id="po-label">PAUSA</div>
+  <div class="po-timer" id="po-timer">00:00</div>
+  <button class="po-resume" onclick="resumeDialer()">▶ RETOMAR DISCAGEM</button>
 </div>
 
-<!-- QUEUE -->
-<div class="queue-panel">
-  <div class="qp-header">
-    <div class="qp-title">Fila de Ligações</div>
-    <div class="qp-stats">
-      <div class="qs"><div class="qs-val" id="stat-total">0</div><div class="qs-lbl">TOTAL</div></div>
-      <div class="qs"><div class="qs-val" style="color:var(--green)" id="stat-done">0</div><div class="qs-lbl">FEITAS</div></div>
-      <div class="qs"><div class="qs-val" style="color:var(--yellow)" id="stat-pend">0</div><div class="qs-lbl">FILA</div></div>
-    </div>
-    <div class="qp-search">
-      <span style="color:var(--text3);font-size:12px">🔍</span>
-      <input type="text" placeholder="Buscar lead..." id="search-input" oninput="filterLeads()">
-    </div>
+<!-- ══ COUNTDOWN OVERLAY ══ -->
+<div class="cd-overlay" id="cd-overlay">
+  <div class="cd-result" id="cd-result">—</div>
+  <div class="cd-lbl">próxima ligação em</div>
+  <div class="cd-num" id="cd-num">3</div>
+  <div class="cd-next">
+    <div class="cd-next-lbl">Próximo lead</div>
+    <div class="cd-next-name" id="cd-next-name">—</div>
+    <div class="cd-next-phone" id="cd-next-phone">—</div>
   </div>
-  <div class="queue-filters">
-    <div class="qf active" onclick="setFilter('all',this)">Todos</div>
-    <div class="qf" onclick="setFilter('fila',this)">Fila</div>
-    <div class="qf" onclick="setFilter('remarcar',this)">Remarcar</div>
-    <div class="qf" onclick="setFilter('agendado',this)">Agendados</div>
-  </div>
-  <div class="queue-list" id="queue-list"></div>
+  <button class="cd-cancel" onclick="cancelCountdown()">✕ Cancelar</button>
 </div>
 
-<!-- MAIN -->
-<div class="main-area">
-  <div class="main-topbar">
-    <div class="mt-left">
-      <div class="sdr-sel" onclick="openSettings()">
-        <div class="sdr-av" id="sdr-av">?</div>
-        <div class="sdr-nm" id="sdr-nm">Configure o SDR</div>
-        <span style="color:var(--text3);font-size:9px">▾</span>
-      </div>
-      <div class="ss">
-        <div class="ss-item">📞 <b id="ss-calls">0</b></div>
-        <div class="ss-item">⏱ <b id="ss-time">00:00</b></div>
-        <div class="ss-item">📅 <b id="ss-sched">0</b></div>
-      </div>
-    </div>
-    <div class="mt-right">
-      <div class="pill" id="pabx-pill" onclick="testPabx()" title="Status PABX / Testar">
-        <div class="pill-dot" id="pabx-dot"></div>
-        <span class="pill-lbl" id="pabx-lbl">PABX</span>
-      </div>
-      <div class="pill auto-on" id="auto-pill" onclick="togglePD()">
-        <div class="pill-dot" style="background:var(--green);box-shadow:0 0 5px var(--green-glow)"></div>
-        <span class="pill-lbl" id="auto-lbl" style="color:var(--green)">⚡ AUTO</span>
-      </div>
-      <button class="tbtn" onclick="startAutoQueue()">▶ Iniciar Fila</button>
-    </div>
-  </div>
-
-  <!-- CORS BANNER — aparece quando rodando como file:// -->
-  <div class="cors-banner" id="cors-banner">
-    <div class="cors-banner-title">⚠ PABX bloqueado — configuração necessária</div>
-    <div class="cors-banner-text">
-      Para o PABX funcionar, o arquivo precisa estar no <b>Vercel</b> com o proxy configurado.<br>
-      1. Adicione <code>api/pabx.js</code> ao repositório GitHub<br>
-      2. OU configure um <b>Proxy URL</b> nas configurações ⚙<br>
-      3. OU use o modo <b>Tel: Manual</b> (abre o discador do celular)
-    </div>
-    <div class="cors-banner-btns">
-      <button class="cors-btn cors-btn-copy" onclick="copyProxyInstructions()">📋 Copiar código do proxy</button>
-      <button class="cors-btn cors-btn-skip" onclick="document.getElementById('cors-banner').style.display='none'">✕ Fechar</button>
-    </div>
-  </div>
-
-  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-    <div class="state-empty" id="state-empty">
-      <div style="font-size:42px;opacity:.3">📞</div>
-      <div style="font-size:16px;font-weight:700;color:var(--text2)">Fila pronta</div>
-      <div style="font-size:12px;text-align:center;max-width:240px;line-height:1.6">Clique em "Iniciar Fila" para começar. Ligações serão feitas via PABX IntegraVoip.</div>
-      <button class="btn-start" onclick="startAutoQueue()">▶ Iniciar Fila</button>
-    </div>
-
-    <div class="call-screen" id="call-screen" style="display:none">
-
-      <!-- Lead hero -->
-      <div class="lead-hero">
-        <div>
-          <div class="lh-name" id="ch-name">—</div>
-          <div class="lh-co" id="ch-co">—</div>
-          <div class="lh-row"><div class="lh-ico">📱</div><span class="lh-val" id="ch-phone">—</span><span class="lh-lbl">celular</span></div>
-          <div style="margin-top:8px"><span class="lh-stg" id="ch-stg">—</span></div>
-        </div>
-        <div class="lh-right">
-          <div class="att-box">
-            <div class="att-num" id="ch-att">1</div>
-            <div class="att-lbl">TENTATIVA</div>
-          </div>
-          <a class="rd-lnk" id="ch-rd" href="#" target="_blank">🔗 RD Station</a>
-        </div>
-      </div>
-
-      <!-- Controls -->
-      <div class="call-controls" id="call-controls">
-
-        <!-- COUNTDOWN OVERLAY -->
-        <div class="cd-overlay" id="cd-overlay">
-          <div class="cd-badge" id="cd-badge">—</div>
-          <div class="cd-lbl">próxima ligação em</div>
-          <div class="cd-num" id="cd-num">3</div>
-          <div class="cd-next">
-            <div class="cd-next-lbl">Próximo lead</div>
-            <div class="cd-next-name" id="cd-next-name">—</div>
-            <div class="cd-next-co" id="cd-next-co">—</div>
-          </div>
-          <button class="cd-cancel" onclick="cancelCountdown()">✕ Cancelar</button>
-        </div>
-
-        <!-- IDLE -->
-        <div class="cc-idle" id="cc-idle">
-          <button class="big-call-btn" id="btn-call" onclick="startCall()">
-            <span style="font-size:18px">📞</span>
-            <span>Ligar — <span id="cc-prev" style="font-family:var(--mono)">—</span></span>
-          </button>
-          <div class="skip-row">
-            <button class="tbtn" style="flex:1;padding:6px" onclick="skipLead()">⏭ Pular</button>
-            <button class="tbtn" style="flex:1;padding:6px" onclick="markNoPhone()">📵 Sem tel.</button>
-          </div>
-        </div>
-
-        <!-- CALLING -->
-        <div class="cc-calling" id="cc-calling">
-          <div class="pabx-bar" id="pabx-bar">
-            <div class="pabx-bar-l">
-              <div class="pabx-bar-dot" id="pabx-bar-dot"></div>
-              <div>
-                <div class="pabx-bar-info" id="pabx-bar-info">Conectando...</div>
-                <div class="pabx-bar-sub" id="pabx-bar-sub">—</div>
-              </div>
-            </div>
-            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)" id="pabx-bar-dest">—</div>
-          </div>
-          <div class="timer-bar">
-            <div>
-              <div class="timer-display" id="timer-display">00:00</div>
-              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px">duração</div>
-            </div>
-            <div style="text-align:right">
-              <div class="timer-status"><div class="live-dot"></div>Em ligação</div>
-              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px" id="call-phone">—</div>
-            </div>
-          </div>
-          <div class="result-hint">👇 Toque no resultado — encerra e avança automaticamente</div>
-          <div class="result-grid">
-            <button class="result-btn" onclick="endWithResult('Agendou','r-agendou',this)">📅 Agendou<small>Reunião marcada</small></button>
-            <button class="result-btn" onclick="endWithResult('Não Atendeu','r-nao',this)">❌ Não Atendeu<small>Sem resposta</small></button>
-            <button class="result-btn" onclick="endWithResult('Remarcar','r-remarcar',this)">🔄 Remarcar<small>Ligar de novo</small></button>
-            <button class="result-btn" onclick="endWithResult('Desqualificado','r-desq',this)">🚫 Desqualificado<small>Fora do perfil</small></button>
-            <button class="result-btn" onclick="endWithResult('Contato Feito','r-contato',this)">✅ Contato Feito<small>Falou, sem ag.</small></button>
-            <button class="result-btn" onclick="endWithResult('Caixa Postal','r-postal',this)">📬 Caixa Postal<small>Voicemail</small></button>
-          </div>
-          <button class="enc-btn" onclick="endNoResult()">⏹ Encerrar</button>
-        </div>
-
-        <!-- ENDED — sempre pede resultado antes de avançar -->
-        <div class="cc-ended" id="cc-ended">
-          <div class="ended-sum">
-            <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Resultado</div><div style="font-size:14px;font-weight:700" id="ended-res">—</div></div>
-            <div style="text-align:right"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Duração</div><div style="font-family:var(--mono);font-size:13px;font-weight:700" id="ended-dur">—</div></div>
-          </div>
-          <!-- Se não tem resultado, pede aqui também -->
-          <div id="ended-result-area" style="display:none">
-            <div class="ended-result-prompt">Selecione o resultado antes de avançar:</div>
-            <div class="result-grid" style="margin-top:6px">
-              <button class="result-btn" onclick="setEndedResult('Agendou','r-agendou',this)">📅 Agendou</button>
-              <button class="result-btn" onclick="setEndedResult('Não Atendeu','r-nao',this)">❌ Não Atendeu</button>
-              <button class="result-btn" onclick="setEndedResult('Remarcar','r-remarcar',this)">🔄 Remarcar</button>
-              <button class="result-btn" onclick="setEndedResult('Desqualificado','r-desq',this)">🚫 Desqualificado</button>
-              <button class="result-btn" onclick="setEndedResult('Contato Feito','r-contato',this)">✅ Contato</button>
-              <button class="result-btn" onclick="setEndedResult('Caixa Postal','r-postal',this)">📬 Postal</button>
-            </div>
-          </div>
-          <div class="ended-act">
-            <button class="btn-nxt" onclick="nextLead()">▶ Próximo Lead</button>
-            <button class="btn-recall" onclick="reCall()">↩ Religar</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
+<!-- ══ ALERT OVERLAY (scheduled call) ══ -->
+<div class="alert-overlay" id="alert-overlay">
+  <div class="ao-ring">🔔</div>
+  <div class="ao-title">⏰ Hora de ligar!</div>
+  <div class="ao-name" id="ao-name">—</div>
+  <div class="ao-phone" id="ao-phone">—</div>
+  <div class="ao-note" id="ao-note"></div>
+  <div class="ao-btns">
+    <button class="ao-call" onclick="callFromAlert()">📞 Ligar Agora</button>
+    <button class="ao-later" onclick="snoozeAlert()">⏰ Em 5 min</button>
+    <button class="ao-later" onclick="dismissAlert()">✕ Fechar</button>
   </div>
 </div>
 
-<!-- KANBAN SIDEBAR -->
-<div class="kanban-side">
-  <div class="ks-hdr">
-    <div class="ks-hdr-top">
-      <div class="ks-ttl">Pipeline GFB</div>
-      <div class="ks-sync" id="ks-sync">—</div>
-    </div>
-    <div class="ks-tabs">
-      <div class="ks-tab active" onclick="setKsTab('pipe',this)">Kanban</div>
-      <div class="ks-tab" onclick="setKsTab('online',this)">Ao Vivo</div>
-      <div class="ks-tab" onclick="setKsTab('hist',this)">Histórico</div>
-    </div>
-  </div>
-  <div class="ks-body" id="ks-pipe"></div>
-  <div class="ks-body" id="ks-online" style="display:none"></div>
-  <div class="ks-body" id="ks-hist" style="display:none"></div>
-</div>
-
-</div><!-- shell -->
-
-<!-- CONFIG MODAL -->
-<div class="modal-bg" id="cfg-modal">
+<!-- ══ REMARCAR MODAL ══ -->
+<div class="modal-bg" id="remarcar-modal">
   <div class="modal">
-    <div class="modal-title">⚙ Configurações</div>
-    <div class="modal-sub">SDR, PABX IntegraVoip e integrações</div>
-
-    <div class="pabx-info-box">
-      🔌 <b>IntegraVoip</b> · pabx2.integravoip.com.br<br>
-      Token: <code>be6e3c68-9013...</code> · Usuário: <code>gestao-fitness-brasil-api</code><br>
-      <br>
-      ⚠ Se estiver abrindo como arquivo local, configure um <b>Proxy URL</b> abaixo ou faça deploy no Vercel com o arquivo <code>api/pabx.js</code>.
-    </div>
-
-    <div class="section-label">SDR & Discagem</div>
+    <div class="modal-title">📅 Agendar retorno</div>
+    <div class="modal-sub" id="remarcar-lead-name">—</div>
     <div class="fg fi-row">
-      <div><label class="flbl">Seu Nome (SDR)</label><input type="text" class="fi" id="cfg-name" placeholder="Ex: Ana Lima"></div>
-      <div><label class="flbl">Ramal de Origem</label><input type="number" class="fi" id="cfg-ramal" placeholder="201" min="100" max="999"></div>
+      <div><label class="flbl">Data</label><input type="date" class="fi" id="rm-date"></div>
+      <div><label class="flbl">Hora</label><input type="time" class="fi" id="rm-time"></div>
     </div>
-    <div class="fg fi-row3">
-      <div><label class="flbl">Delay Auto (s)</label><input type="number" class="fi" id="cfg-delay" min="1" max="15" placeholder="3"></div>
-      <div style="grid-column:span 2"><label class="flbl">Proxy PABX (URL completa)</label><input type="text" class="fi" id="cfg-proxy" placeholder="https://seusite.vercel.app/api/pabx"></div>
+    <div class="fg"><label class="flbl">Observação</label><input type="text" class="fi" id="rm-note" placeholder="Ex: Ligar após reunião da manhã"></div>
+    <div class="fg">
+      <label class="flbl">Tipo</label>
+      <select class="fi" id="rm-type">
+        <option value="callback">📞 Retornar chamada</option>
+        <option value="meeting">📅 Reunião agendada</option>
+      </select>
     </div>
-    <button class="test-btn" onclick="testPabx()">🔌 Testar conexão PABX agora</button>
+    <button class="modal-btn" onclick="saveRemarcar()">✅ Confirmar agendamento</button>
+    <button class="modal-cancel" onclick="closeRemarcar()">Pular (sem agendar)</button>
+  </div>
+</div>
 
-    <div class="section-label">RD Station CRM</div>
+<!-- ══ CONFIG MODAL ══ -->
+<div class="modal-bg" id="cfg-modal">
+  <div class="modal" style="max-height:90vh;overflow-y:auto">
+    <div class="modal-title">⚙ Configurações</div>
+    <div class="modal-sub">SDR, PABX e RD Station</div>
+    <div class="info-box orange">🎧 <b>Áudio:</b> Instale o <b>Zoiper</b> no celular/PC e registre no ramal configurado abaixo. O browser apenas envia o comando de discagem ao PABX.</div>
+    <div class="sec-lbl">SDR & Discagem</div>
+    <div class="fg fi-row">
+      <div><label class="flbl">Seu Nome (SDR)</label><input type="text" class="fi" id="cfg-name" placeholder="Ex: Marcelo"></div>
+      <div><label class="flbl">Ramal de Origem</label><input type="number" class="fi" id="cfg-ramal" placeholder="201"></div>
+    </div>
+    <div class="fg fi-row">
+      <div><label class="flbl">Delay Auto (s)</label><input type="number" class="fi" id="cfg-delay" min="1" max="15" placeholder="3"></div>
+      <div><label class="flbl">Proxy PABX URL</label><input type="text" class="fi" id="cfg-proxy" placeholder="https://discadorsdr.vercel.app/api/pabx"></div>
+    </div>
+    <button class="test-btn" onclick="testPabx()">🔌 Testar conexão PABX</button>
+    <div class="sec-lbl">RD Station CRM</div>
+    <div class="info-box blue">Leads carregados automaticamente ao abrir. Configure o Token e Pipeline abaixo.</div>
     <div class="fg fi-row">
       <div><label class="flbl">Token RD Station</label><input type="password" class="fi" id="cfg-rd" placeholder="Token pessoal"></div>
-      <div><label class="flbl">Pipeline ID</label><input type="text" class="fi" id="cfg-pipe" placeholder="694aab..."></div>
+      <div><label class="flbl">Pipeline ID</label><input type="text" class="fi" id="cfg-pipe" placeholder="694aabf0..."></div>
     </div>
-
-    <button class="modal-btn" onclick="saveCfg()">💾 Salvar configurações</button>
+    <div class="fg"><label class="flbl">Etapas para discar (vírgula)</label><input type="text" class="fi" id="cfg-stages" placeholder="Sem Contato/Lead, Entrar em Contato, Remarcar Reunião"></div>
+    <button class="test-btn" style="margin-bottom:4px" onclick="syncRD()">🔄 Sincronizar RD Station agora</button>
+    <button class="modal-btn" onclick="saveCfg()">💾 Salvar</button>
     <button class="modal-cancel" onclick="closeCfg()">Cancelar</button>
   </div>
 </div>
 
-<!-- ADD LEAD MODAL -->
+<!-- ══ ADD LEAD ══ -->
 <div class="modal-bg" id="add-modal">
   <div class="modal">
     <div class="modal-title">＋ Adicionar Lead</div>
-    <div class="modal-sub">Lead manual na fila de discagem</div>
     <div class="fg"><label class="flbl">Nome</label><input type="text" class="fi" id="al-name" placeholder="Nome completo"></div>
-    <div class="fg"><label class="flbl">Telefone</label><input type="text" class="fi" id="al-phone" placeholder="5511999999999"></div>
+    <div class="fg"><label class="flbl">Telefone</label><input type="text" class="fi" id="al-phone" placeholder="5561999999999"></div>
     <div class="fg"><label class="flbl">Academia / Empresa</label><input type="text" class="fi" id="al-co" placeholder="Nome da academia"></div>
-    <div class="fg">
-      <label class="flbl">Etapa</label>
-      <select class="fi" id="al-stg">
-        <option value="Sem Contato/Lead">Sem Contato/Lead</option>
-        <option value="Entrar em Contato">Entrar em Contato</option>
-        <option value="Remarcar Reunião">Remarcar Reunião</option>
-        <option value="Contato Feito">Contato Feito</option>
-      </select>
-    </div>
-    <button class="modal-btn" onclick="addLead()">Adicionar à Fila</button>
+    <button class="modal-btn" onclick="addLead()">Adicionar</button>
     <button class="modal-cancel" onclick="closeAdd()">Cancelar</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<!-- ══ SHELL ══ -->
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">G</div>
+      <div class="sdr-chip" onclick="openSettings()">
+        <div class="sdr-av" id="sdr-av">?</div>
+        <div class="sdr-nm" id="sdr-nm">Configurar</div>
+      </div>
+      <div class="ss">
+        <div class="ss-i">📞 <b id="ss-calls">0</b></div>
+        <div class="ss-i">⏱ <b id="ss-time">00:00</b></div>
+        <div class="ss-i">📅 <b id="ss-sched">0</b></div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="pill" id="pabx-pill" onclick="testPabx()">
+        <div class="pdot" id="pabx-dot"></div>
+        <span class="plbl" id="pabx-lbl">PABX</span>
+      </div>
+      <div class="pill pon" id="auto-pill" onclick="toggleAuto()">
+        <div class="pdot" style="background:var(--green);box-shadow:0 0 5px var(--glow)"></div>
+        <span class="plbl" id="auto-lbl" style="color:var(--green)">⚡ AUTO</span>
+      </div>
+      <div class="ico-btn" onclick="openAddLead()" title="Adicionar lead">＋</div>
+      <div class="ico-btn" onclick="openSettings()" title="Configurações">⚙</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="setTab('dialer',this)" id="tab-dialer">📞 Discador</div>
+    <div class="tab" onclick="setTab('agenda',this)" id="tab-agenda">📅 Agenda <span class="tab-badge" id="agenda-badge" style="display:none">0</span></div>
+    <div class="tab" onclick="setTab('kanban',this)" id="tab-kanban">⊞ Kanban</div>
+  </div>
+
+  <!-- ══ DISCADOR ══ -->
+  <div class="page active" id="page-dialer">
+    <div class="dialer-page" id="dialer-inner">
+
+      <!-- Empty / configurar -->
+      <div id="dialer-empty" style="width:100%">
+        <div class="dialer-empty">
+          <div class="e-icon">📞</div>
+          <div class="e-title">Pronto para discagem</div>
+          <div class="e-sub" id="empty-sub">Configure o RD Station para carregar os leads automaticamente, ou adicione um lead manualmente.</div>
+          <button class="start-btn" style="margin-top:4px" onclick="startQueue()">▶ Iniciar Fila</button>
+        </div>
+      </div>
+
+      <!-- Active dialer -->
+      <div id="dialer-active" style="display:none;width:100%;display:none;flex-direction:column;gap:14px">
+
+        <!-- Progress -->
+        <div class="progress-wrap">
+          <div class="pb-track"><div class="pb-fill" id="pb-fill" style="width:0%"></div></div>
+          <div class="pb-label"><b id="pb-done">0</b>/<span id="pb-total">0</span> leads · <span id="pb-pct">0%</span></div>
+        </div>
+
+        <!-- Lead card -->
+        <div class="lead-card" id="lead-card">
+          <div class="lc-name" id="lc-name">—</div>
+          <div class="lc-company" id="lc-company">—</div>
+          <div class="lc-phone" id="lc-phone">—</div>
+          <div class="lc-footer">
+            <span class="lc-stage" id="lc-stage">—</span>
+            <span class="lc-att" id="lc-att">1ª tentativa</span>
+          </div>
+        </div>
+
+        <!-- Call status -->
+        <div class="call-status" id="call-status">
+          <div class="cs-left">
+            <div class="cs-dot cs-calling" id="cs-dot"></div>
+            <div>
+              <div class="cs-info" id="cs-info">Aguardando ligação...</div>
+              <div class="cs-sub" id="cs-sub">Ramal <span id="cs-ramal">201</span></div>
+            </div>
+          </div>
+          <div class="timer-big" id="timer-display">00:00</div>
+        </div>
+
+        <!-- Result buttons — só aparecem durante ligação -->
+        <div id="result-section" style="display:none">
+          <div class="result-hint">👇 Toque no resultado para encerrar e avançar</div>
+          <div class="result-grid" style="margin-top:7px">
+            <button class="r-btn rb-agendou" onclick="endCall('Agendou',this)">
+              <span class="r-icon">📅</span>AGENDOU
+            </button>
+            <button class="r-btn rb-nao-agendou" onclick="endCall('Não Agendou',this)">
+              <span class="r-icon">⚠️</span>NÃO AGENDOU
+            </button>
+            <button class="r-btn rb-remarcar" onclick="endCall('Remarcar',this)">
+              <span class="r-icon">🔄</span>REMARCAR
+            </button>
+            <button class="r-btn rb-nao-atendeu" onclick="endCall('Não Atendeu',this)">
+              <span class="r-icon">📵</span>NÃO ATENDEU
+            </button>
+          </div>
+        </div>
+
+        <!-- IDLE: call button -->
+        <div id="idle-section">
+          <button class="start-btn" id="btn-call" onclick="dialCurrent()">
+            <span style="font-size:20px">📞</span>
+            <span id="btn-call-txt">Ligar</span>
+          </button>
+          <div class="pause-row" style="margin-top:8px">
+            <button class="pause-btn" onclick="skipLead()"><span class="p-icon">⏭</span>Pular</button>
+            <button class="pause-btn" onclick="markNoPhone()"><span class="p-icon">📵</span>Sem Tel.</button>
+          </div>
+        </div>
+
+        <!-- Pause buttons (sempre visíveis durante discagem) -->
+        <div class="pause-row" id="pause-row">
+          <button class="pause-btn" onclick="doPause('pause','⏸','PAUSA')"><span class="p-icon">⏸</span>Pausar</button>
+          <button class="pause-btn" onclick="doPause('bathroom','🚿','BANHEIRO')"><span class="p-icon">🚿</span>Banheiro</button>
+          <button class="pause-btn" onclick="doPause('lunch','🍽','ALMOÇO')"><span class="p-icon">🍽</span>Almoço</button>
+          <button class="pause-btn" onclick="doPause('meeting','📋','REUNIÃO')"><span class="p-icon">📋</span>Reunião</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ AGENDA ══ -->
+  <div class="page" id="page-agenda">
+    <div class="agenda-page">
+      <div class="agenda-header">
+        <div class="agenda-title">📅 Agenda de Retornos</div>
+        <div class="agenda-date" id="agenda-date-lbl">—</div>
+      </div>
+      <div id="agenda-list">
+        <div class="agenda-empty">
+          <div class="agenda-empty-icon">📅</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px">Nenhum retorno agendado</div>
+          <div style="font-size:12px;line-height:1.7">Quando você clicar em "Remarcar" ou "Agendou" durante uma ligação, o retorno aparecerá aqui com alerta automático no horário.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ KANBAN ══ -->
+  <div class="page" id="page-kanban">
+    <div class="kanban-page">
+      <div class="kanban-header">
+        <div class="kanban-header-title">Pipeline GFB</div>
+        <div class="kanban-sync" id="kanban-sync">—</div>
+      </div>
+      <div class="kanban-board" id="kanban-board"></div>
+    </div>
+  </div>
+
+</div><!-- shell -->
+
 <script>
-// ══ STATE ══
-const LS={get:(k,d='')=>{try{return localStorage.getItem('gfb_'+k)||d}catch{return d}},set:(k,v)=>{try{localStorage.setItem('gfb_'+k,v)}catch{}}};
-let cfg={name:LS.get('sdr_name'),rdToken:LS.get('rd_token'),pipeId:LS.get('pipe_id','694aabf03f1ed8001d44a46b'),delay:parseInt(LS.get('delay','3'))||3,ramal:parseInt(LS.get('ramal','201'))||201,proxy:LS.get('proxy','')};
-let leads=JSON.parse(LS.get('leads','[]'));
-let hist=JSON.parse(LS.get('history','[]'));
-let curFilter='all',curIdx=-1,callState='idle';
-let timerInt=null,sessInt=null,callStart=null,cdInt=null,pabxPollInt=null;
-let sessStart=Date.now(),sessCalls=0,sessSched=0,selResult='',lastDur=0;
-let powerDialer=true,pabxSt='unknown',pabxCallFound=false,liveCalls=[];
+// ══════════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════════
+const LS={
+  get:(k,d='')=>{try{return localStorage.getItem('gfb_'+k)||d}catch{return d}},
+  set:(k,v)=>{try{localStorage.setItem('gfb_'+k,v)}catch{}}
+};
 
-const STAGE_COLORS={'Sem Contato/Lead':'#7a94b0','Contato Feito':'#4d93ff','Reunião Agendada':'#00e87a','Remarcar Reunião':'#ffd600','Entrar em Contato':'#ff8c00','Em Negociação':'#8b5cf6','Acompanhamento':'#ff3355'};
-const STAGES=['Sem Contato/Lead','Contato Feito','Reunião Agendada','Remarcar Reunião','Entrar em Contato','Em Negociação','Acompanhamento'];
-const RES_COLORS={'Agendou':'var(--green)','Não Atendeu':'var(--yellow)','Remarcar':'var(--blue2)','Desqualificado':'var(--red)','Contato Feito':'var(--purple)','Caixa Postal':'var(--orange)'};
-const BADGE_STYLES={'Agendou':'color:var(--green);border-color:var(--green);background:rgba(0,232,122,.1)','Não Atendeu':'color:var(--yellow);border-color:var(--yellow);background:rgba(255,214,0,.07)','Remarcar':'color:var(--blue2);border-color:var(--blue2);background:rgba(77,147,255,.07)','Desqualificado':'color:var(--red);border-color:var(--red);background:rgba(255,51,85,.07)','Contato Feito':'color:var(--purple);border-color:var(--purple);background:rgba(139,92,246,.07)','Caixa Postal':'color:var(--orange);border-color:var(--orange);background:rgba(255,140,0,.07)'};
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let cfg={
+  name:    LS.get('sdr_name'),
+  rdToken: LS.get('rd_token'),
+  pipeId:  LS.get('pipe_id','694aabf03f1ed8001d44a46b'),
+  delay:   parseInt(LS.get('delay','3'))||3,
+  ramal:   parseInt(LS.get('ramal','201'))||201,
+  proxy:   LS.get('proxy',''),
+  stages:  LS.get('stages','Sem Contato/Lead,Entrar em Contato,Remarcar Reunião')
+};
 
-// ══ PABX ══
+let leads      = JSON.parse(LS.get('leads','[]'));
+let scheduled  = JSON.parse(LS.get('scheduled','[]')); // [{id,leadId,leadName,phone,at,note,type}]
+let curIdx     = -1;
+let callState  = 'idle';   // idle | calling | paused
+let autoMode   = true;
+let timerInt   = null;
+let sessInt    = null;
+let pauseInt   = null;
+let cdInt      = null;
+let alertInt   = null;
+let callStart  = null;
+let pauseStart = null;
+let sessStart  = Date.now();
+let sessCalls  = 0;
+let sessSched  = 0;
+let curAlert   = null;     // scheduled item being alerted
+let pendingResult = null;  // result awaiting remarcar modal
+
+const STAGES = ['Sem Contato','Tentativa','Remarcado','Agendado','Desqualificado'];
+const STAGE_COLORS = {
+  'Sem Contato':'#7a94b0','Tentativa':'#ffd600',
+  'Remarcado':'#4d93ff','Agendado':'#00e87a','Desqualificado':'#ff3355'
+};
+
+function resultToStage(r){
+  if(r==='Agendou')return'Agendado';
+  if(r==='Remarcar')return'Remarcado';
+  if(r==='Não Agendou')return'Tentativa';
+  if(r==='Não Atendeu')return'Tentativa';
+  return'Tentativa';
+}
+
+// ══════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════
+function setTab(name, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='kanban')renderKanban();
+  if(name==='agenda')renderAgenda();
+}
+
+// ══════════════════════════════════════════════════
+// PABX
+// ══════════════════════════════════════════════════
 const PABX_BASE='https://pabx2.integravoip.com.br/suite/api';
 const PABX_TOKEN='be6e3c68-9013-4701-b09e-e828466f9238';
 const PABX_USR='gestao-fitness-brasil-api';
 
-// Auto-detect proxy URL
-function getPabxProxy() {
+function getProxy(){
   if(cfg.proxy)return cfg.proxy;
-  // Se rodando no Vercel (domínio real, não file://)
-  if(window.location.protocol!=='file:'&&!['localhost','127.0.0.1'].includes(window.location.hostname)){
+  if(window.location.protocol!=='file:'&&!['localhost','127.0.0.1'].includes(window.location.hostname))
     return window.location.origin+'/api/pabx';
-  }
-  return null; // sem proxy = chamada direta (vai falhar por CORS se file://)
+  return null;
 }
 
-async function pabxFetch(endpoint,opts={}){
-  const proxy=getPabxProxy();
+async function pabxFetch(ep,opts={}){
+  const proxy=getProxy();
   if(proxy){
-    // Rota pelo proxy Vercel
     const body=opts.body?JSON.parse(opts.body):undefined;
-    const r=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint,method:opts.method||'GET',body})});
-    const txt=await r.text();
-    try{return JSON.parse(txt);}catch{return{raw:txt,status:r.status};}
+    const r=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:ep,method:opts.method||'GET',body})});
+    const t=await r.text();try{return JSON.parse(t);}catch{return{raw:t};}
   }else{
-    // Chamada direta — pode falhar por CORS se file://
     const h={'accept':'application/json','usuario':PABX_USR,'token':PABX_TOKEN};
     if(opts.method==='POST')h['Content-Type']='application/json';
-    const r=await fetch(PABX_BASE+endpoint,{...opts,headers:h});
-    const txt=await r.text();
-    try{return JSON.parse(txt);}catch{return{raw:txt};}
+    const r=await fetch(PABX_BASE+ep,{...opts,headers:h});
+    const t=await r.text();try{return JSON.parse(t);}catch{return{raw:t};}
   }
 }
 
-async function pabxDial(phone,ramal){return pabxFetch('/discar_numero',{method:'POST',body:JSON.stringify({dados:{numero_ramal_origem:parseInt(ramal),numero_destino:String(phone)}})});}
-async function pabxOnline(){return pabxFetch('/listar_chamadas_online');}
-async function pabxHistorico(di,hi,df,hf){return pabxFetch(`/listar_historico_chamada?data_inicial=${di}&hora_inicial=${hi}&data_final=${df}&hora_final=${hf}`);}
+async function pabxDial(phone,ramal){
+  return pabxFetch('/discar_numero',{method:'POST',body:JSON.stringify({dados:{numero_ramal_origem:parseInt(ramal),numero_destino:String(phone)}})});
+}
 
-function fmtPhonePABX(p){let c=p.replace(/\D/g,'');if(c.startsWith('55')&&c.length>=12)c=c.slice(2);return c;}
-function extractArr(d){if(Array.isArray(d))return d;for(const k of['dados','data','chamadas','result','results']){if(d&&Array.isArray(d[k]))return d[k];}if(d&&typeof d==='object'){const v=Object.values(d);if(v.length&&Array.isArray(v[0]))return v[0];}return[];}
-
-function setPabxSt(st,info=''){
-  pabxSt=st;
+function setPabxSt(st){
   const pill=document.getElementById('pabx-pill');
   const dot=document.getElementById('pabx-dot');
   const lbl=document.getElementById('pabx-lbl');
-  if(!pill)return;
   pill.className='pill';
-  if(st==='ok'){pill.classList.add('pabx-ok');dot.style.background='var(--green)';lbl.textContent='PABX ✓';lbl.style.color='var(--green)';}
-  else if(st==='err'){pill.classList.add('pabx-err');dot.style.background='var(--red)';lbl.textContent='PABX ✗';lbl.style.color='var(--red)';}
-  else if(st==='calling'){pill.classList.add('pabx-calling');dot.style.cssText='background:var(--yellow);animation:pb .7s infinite';lbl.textContent='PABX 📞';lbl.style.color='var(--yellow)';}
-  else if(st==='dialing'){pill.classList.add('pabx-connecting');dot.style.cssText='background:var(--orange);animation:pb .4s infinite';lbl.textContent='Discando...';lbl.style.color='var(--orange)';}
-  else{dot.style.background='var(--text3)';lbl.textContent='PABX';lbl.style.color='var(--text3)';}
-  // Update bar
-  const bar=document.getElementById('pabx-bar');
-  const bDot=document.getElementById('pabx-bar-dot');
-  const bInfo=document.getElementById('pabx-bar-info');
-  const bSub=document.getElementById('pabx-bar-sub');
-  if(!bar)return;
-  bar.className='pabx-bar';
-  if(st==='dialing'){bar.classList.add('bar-dialing');bDot.className='pabx-bar-dot bdialing';if(bInfo)bInfo.textContent=info||'Discando via PABX...';}
-  else if(st==='calling'){bar.classList.add('bar-calling');bDot.className='pabx-bar-dot bcalling';if(bInfo)bInfo.textContent=info||'Chamada ativa';}
-  else if(st==='err'){bar.classList.add('bar-err');bDot.className='pabx-bar-dot berr';if(bInfo)bInfo.textContent='Erro PABX — ligando via tel:';}
-  else if(st==='tel'){bar.classList.add('bar-tel');bDot.className='pabx-bar-dot btel';if(bInfo)bInfo.textContent='Discagem manual (tel:)';}
-  else{bDot.className='pabx-bar-dot';if(bInfo)bInfo.textContent='Aguardando...';}
-  if(bSub)bSub.textContent=`Ramal ${cfg.ramal||201}`;
+  const map={ok:['pok','var(--green)','PABX ✓'],err:['perr','var(--red)','PABX ✗'],dialing:['pcon','var(--orange)','Discando'],calling:['pcall','var(--yellow)','📞 PABX']};
+  const [cls,c,t]=map[st]||['','var(--text3)','PABX'];
+  if(cls)pill.classList.add(cls);
+  dot.style.background=c;lbl.textContent=t;lbl.style.color=c;
 }
 
 async function testPabx(){
-  setPabxSt('dialing','Testando conexão...');
-  toast('🔌 Testando PABX IntegraVoip...','ok');
+  setPabxSt('dialing');toast('🔌 Testando PABX...','ok');
   try{
-    const d=await pabxOnline();
-    if(d.raw&&!d.dados&&!d.data&&!Array.isArray(d))throw new Error('Resposta inesperada: '+JSON.stringify(d).slice(0,80));
-    setPabxSt('ok');
-    toast('✅ PABX conectado! IntegraVoip OK','ok');
+    const d=await pabxFetch('/listar_chamadas_online');
+    if(d.raw&&d.raw.includes('<html'))throw new Error('Proxy não encontrado');
+    setPabxSt('ok');toast('✅ PABX conectado!','ok');
   }catch(e){
     setPabxSt('err');
-    const isCors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError')||e.message.includes('CORS');
-    if(isCors){
-      document.getElementById('cors-banner').style.display='block';
-      toast('⚠ CORS bloqueado — veja o banner abaixo','warn');
-    }else{
-      toast('❌ PABX: '+e.message,'err');
-    }
+    toast(e.message.includes('fetch')?'⚠ Configure o Proxy URL nas ⚙':'❌ '+e.message.slice(0,60),'err');
   }
 }
 
-// ══ PABX POLLING ══
-function startPabxPoll(){
-  pabxCallFound=false;
-  const ramal=cfg.ramal||201;
-  pabxPollInt=setInterval(async()=>{
-    if(callState!=='calling'){clearInterval(pabxPollInt);return;}
-    try{
-      const d=await pabxOnline();
-      const calls=extractArr(d);
-      liveCalls=calls;
-      const myCall=calls.find(c=>String(c.ramal_origem)==String(ramal)||String(c.numero_ramal_origem)==String(ramal)||String(c.ramal)==String(ramal)||String(c.id_ramal)==String(ramal));
-      if(myCall){
-        pabxCallFound=true;
-        const dest=myCall.numero_destino||myCall.destino||'—';
-        const dur=myCall.duracao||myCall.tempo_chamada||'';
-        setPabxSt('calling',`Ramal ${ramal} → ${dest}`);
-        const el=document.getElementById('pabx-bar-dest');if(el)el.textContent=dest+(dur?' · '+dur:'');
-        renderOnlineTab(calls);
-      }else if(pabxCallFound&&callState==='calling'){
-        pabxCallFound=false;clearInterval(pabxPollInt);
-        setPabxSt('ok');
-        toast('📵 Chamada encerrada pelo PABX','ok');
-        endNoResult();
-      }
-    }catch(e){console.warn('[PABX poll]',e.message);}
-  },3000);
-}
-function stopPabxPoll(){clearInterval(pabxPollInt);pabxCallFound=false;}
-
-async function loadPabxHistorico(){
-  const btn=document.getElementById('btn-pabx-hist');
-  if(btn){btn.textContent='⏳ Carregando...';btn.disabled=true;}
+// ══════════════════════════════════════════════════
+// RD STATION
+// ══════════════════════════════════════════════════
+async function syncRD(){
+  if(!cfg.rdToken){toast('Configure o Token RD Station','warn');openSettings();return;}
+  toast('🔄 Sincronizando RD Station...','ok');
   try{
-    const now=new Date();
-    const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-    const fmtH=d=>`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    const d=await pabxHistorico(fmt(now),'00:00',fmt(now),fmtH(now));
-    const arr=extractArr(d);
-    if(!arr.length){toast('Nenhuma chamada hoje no PABX','warn');return;}
-    const mapped=arr.map(c=>({id:Date.now()+Math.random(),leadName:c.numero_destino||c.destino||'—',company:c.nome_origem||'',result:c.resultado||c.status_chamada||'PABX',duration:c.duracao||c.tempo_total||'—',time:(c.hora_inicio||c.hora||'').substring(0,5)||'—',fromPabx:true}));
-    hist=[...mapped,...hist.filter(h=>!h.fromPabx)];
-    LS.set('history',JSON.stringify(hist));renderHist();
-    toast(`✅ ${arr.length} chamadas carregadas do PABX`,'ok');
-  }catch(e){toast('Erro PABX histórico: '+e.message,'err');}
-  finally{if(btn){btn.textContent='📋 Carregar histórico PABX (hoje)';btn.disabled=false;}}
+    const stages=cfg.stages.split(',').map(s=>s.trim()).filter(Boolean);
+    let all=[],page=1,total=0;
+    do{
+      const r=await fetch(`https://crm.rdstation.com/api/v1/deals?token=${cfg.rdToken}&deal_pipeline_id=${cfg.pipeId}&limit=200&page=${page}`);
+      if(!r.ok)throw new Error('HTTP '+r.status+' — verifique token e pipeline ID');
+      const d=await r.json();
+      total=d.total||0;all=[...all,...(d.deals||[])];page++;
+      if((d.deals||[]).length<200)break;
+    }while(all.length<total&&page<=10);
+
+    leads=all.map(d=>({
+      id:d._id||d.id,
+      name:d.contacts?.[0]?.name||d.name||'Lead',
+      company:d.organization?.name||'',
+      phone:d.contacts?.[0]?.phones?.[0]?.phone||d.contacts?.[0]?.mobile_phone||'',
+      stage:'Sem Contato',
+      rdStage:d.deal_stage?.name||'',
+      attempts:0,called:false,dealId:d._id||d.id
+    })).filter(l=>l.phone);
+
+    LS.set('leads',JSON.stringify(leads));
+    updateProgress();renderKanban();
+    toast(`✅ ${leads.length} leads carregados`,'ok');
+    if(leads.length>0)showDialerActive();
+  }catch(e){toast('❌ RD: '+e.message,'err');console.error(e);}
 }
 
-// Copia código do proxy para clipboard
-function copyProxyInstructions(){
-  const code=`// api/pabx.js — Vercel Serverless Function
-const PABX_BASE='https://pabx2.integravoip.com.br/suite/api';
-export default async function handler(req,res){
-  res.setHeader('Access-Control-Allow-Origin','*');
-  res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers','Content-Type');
-  if(req.method==='OPTIONS'){res.status(200).end();return;}
-  const{endpoint,method='GET',body}=req.body||{};
-  if(!endpoint){res.status(400).json({error:'endpoint required'});return;}
-  const h={'accept':'application/json','usuario':'gestao-fitness-brasil-api','token':'be6e3c68-9013-4701-b09e-e828466f9238'};
-  if(method==='POST')h['Content-Type']='application/json';
-  const r=await fetch(PABX_BASE+endpoint,{method,headers:h,...(body?{body:JSON.stringify(body)}:{})});
-  const txt=await r.text();
-  res.status(r.status).send(txt||'{}');
-}`;
-  navigator.clipboard.writeText(code).then(()=>toast('✅ Código copiado! Cole em api/pabx.js no repositório','ok')).catch(()=>toast('Copie o arquivo api_pabx.js que foi baixado junto','warn'));
+// ══════════════════════════════════════════════════
+// DIALER UI
+// ══════════════════════════════════════════════════
+function showDialerActive(){
+  document.getElementById('dialer-empty').style.display='none';
+  document.getElementById('dialer-active').style.display='flex';
+  updateProgress();
 }
 
-// ══ DEMO DATA ══
-function loadDemo(){
-  if(leads.length)return;
-  leads=[
-    {id:'1',name:'Pedro Roque',company:'Academia FitPower',phone:'5511987654321',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d1',notes:''},
-    {id:'2',name:'José Lucas Pereira',company:'Studio Corpo & Alma',phone:'5511976543210',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d2',notes:''},
-    {id:'3',name:'Tiago Mendes',company:'CrossFit Norte',phone:'5511965432109',stage:'Remarcar Reunião',attempts:2,called:false,dealId:'d3',notes:'Remarcar 26/05'},
-    {id:'4',name:'Camila Ferreira',company:'Pilates Premium',phone:'5511943210987',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d4',notes:''},
-    {id:'5',name:'Matheus Paraíso',company:'Academia Central',phone:'5511932109876',stage:'Entrar em Contato',attempts:1,called:false,dealId:'d5',notes:''},
-    {id:'6',name:'Fernando Lopes',company:'Gym & Health Club',phone:'5511910987654',stage:'Em Negociação',attempts:3,called:false,dealId:'d6',notes:'Proposta enviada'},
-    {id:'7',name:'Thyago Santos',company:'FitLife Academia',phone:'5511909876543',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d7',notes:''},
-    {id:'8',name:'Renata Oliveira',company:'Studio Zen',phone:'5511887654321',stage:'Sem Contato/Lead',attempts:0,called:false,dealId:'d8',notes:''},
-  ];
-  saveLeads();
-}
-function saveLeads(){LS.set('leads',JSON.stringify(leads));}
-
-// ══ QUEUE ══
-function getFiltered(){
-  const q=document.getElementById('search-input').value.toLowerCase();
-  return leads.filter(l=>{
-    const ok=!q||l.name.toLowerCase().includes(q)||(l.company||'').toLowerCase().includes(q);
-    if(!ok)return false;
-    if(curFilter==='all')return true;
-    if(curFilter==='fila')return !l.called;
-    if(curFilter==='remarcar')return l.stage==='Remarcar Reunião';
-    if(curFilter==='agendado')return l.stage==='Reunião Agendada';
-    return true;
-  });
-}
-function renderQueue(){
-  const list=document.getElementById('queue-list');
-  const fil=getFiltered();
-  const done=leads.filter(l=>l.called).length;
-  document.getElementById('stat-total').textContent=leads.length;
-  document.getElementById('stat-done').textContent=done;
-  document.getElementById('stat-pend').textContent=leads.length-done;
-  list.innerHTML=fil.map(l=>{
-    const c=STAGE_COLORS[l.stage]||'#7a94b0',gi=leads.indexOf(l),isA=gi===curIdx,isC=isA&&callState==='calling';
-    return`<div class="lead-card${isA?' active':''}${isC?' calling':''}${l.called&&!isA?' done':''}" onclick="selectLead(${gi})">
-      <div class="lc-top"><div class="lc-name">${l.name}</div><div class="lc-att${l.attempts>=3?' hot':''}">${l.attempts}x</div></div>
-      <div class="lc-phone">${l.phone?fmtPhone(l.phone):'⚠ sem telefone'}</div>
-      <div class="lc-stage"><div class="lc-dot" style="background:${c}"></div>${l.stage}</div>
-    </div>`;
-  }).join('');
-}
-function fmtPhone(p){const c=p.replace(/\D/g,'');if(c.length===13)return`+${c.slice(0,2)} (${c.slice(2,4)}) ${c.slice(4,9)}-${c.slice(9)}`;if(c.length===11)return`(${c.slice(0,2)}) ${c.slice(2,7)}-${c.slice(7)}`;return p;}
-
-// ══ LEAD SELECTION ══
-function selectLead(idx){
-  if(callState==='calling'){toast('Encerre a ligação atual primeiro','err');return;}
-  curIdx=idx;const l=leads[idx];
-  document.getElementById('state-empty').style.display='none';
-  document.getElementById('call-screen').style.display='flex';
-  document.getElementById('ch-name').textContent=l.name;
-  document.getElementById('ch-co').textContent=l.company||'—';
-  document.getElementById('ch-stg').textContent=l.stage;
-  document.getElementById('ch-phone').textContent=l.phone?fmtPhone(l.phone):'Sem telefone';
-  document.getElementById('ch-att').textContent=l.attempts+1;
-  document.getElementById('ch-rd').href=l.dealId?`https://crm.rdstation.com/app/deals/${l.dealId}`:'#';
-  document.getElementById('cc-prev').textContent=l.phone?fmtPhone(l.phone):'sem número';
-  document.getElementById('call-phone').textContent=l.phone?fmtPhone(l.phone):'—';
-  document.getElementById('pabx-bar-dest').textContent=l.phone?fmtPhonePABX(l.phone):'—';
-  document.getElementById('pabx-bar-sub').textContent=`Ramal ${cfg.ramal||201}`;
-  setUI('idle');selResult='';
-  document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');
-  renderQueue();
+function updateProgress(){
+  const done=leads.filter(l=>l.called).length,total=leads.length;
+  if(!total)return;
+  const pct=Math.round((done/total)*100);
+  document.getElementById('pb-fill').style.width=pct+'%';
+  document.getElementById('pb-done').textContent=done;
+  document.getElementById('pb-total').textContent=total;
+  document.getElementById('pb-pct').textContent=pct+'%';
 }
 
-// ══ CALL FLOW ══
-async function startCall(){
+function showLead(l){
+  document.getElementById('lc-name').textContent=l.name;
+  document.getElementById('lc-company').textContent=l.company||'—';
+  document.getElementById('lc-phone').textContent=fmtPhone(l.phone);
+  document.getElementById('lc-stage').textContent=l.rdStage||l.stage;
+  document.getElementById('lc-att').textContent=ordinal(l.attempts+1)+' tentativa';
+  document.getElementById('btn-call-txt').textContent='Ligar — '+fmtPhone(l.phone);
+  document.getElementById('cs-ramal').textContent=cfg.ramal||201;
+}
+
+function ordinal(n){return n+'ª';}
+
+function fmtPhone(p){
+  const c=p.replace(/\D/g,'');
+  if(c.length===13)return`+${c.slice(0,2)} (${c.slice(2,4)}) ${c.slice(4,9)}-${c.slice(9)}`;
+  if(c.length===11)return`(${c.slice(0,2)}) ${c.slice(2,7)}-${c.slice(7)}`;
+  if(c.length===10)return`(${c.slice(0,2)}) ${c.slice(2,6)}-${c.slice(6)}`;
+  return p;
+}
+
+function fmtPABX(p){let c=p.replace(/\D/g,'');if(c.startsWith('55')&&c.length>=12)c=c.slice(2);return c;}
+
+// ══════════════════════════════════════════════════
+// QUEUE
+// ══════════════════════════════════════════════════
+function startQueue(){
+  const fi=leads.findIndex(l=>!l.called);
+  if(fi<0){toast('Todos os leads foram contatados!','ok');return;}
+  showDialerActive();
+  loadLead(fi);
+}
+
+function loadLead(idx){
+  curIdx=idx;
+  const l=leads[idx];
+  showLead(l);
+  setCallState('idle');
+  if(autoMode)setTimeout(()=>dialCurrent(),300);
+}
+
+async function dialCurrent(){
   const l=leads[curIdx];if(!l)return;
-  if(!l.phone){toast('Lead sem telefone','err');return;}
+  if(!l.phone){toast('Lead sem telefone — pulando','warn');skipLead();return;}
+  if(callState==='calling')return;
+
   const btn=document.getElementById('btn-call');
-  btn.disabled=true;btn.innerHTML='<span style="font-size:18px">⏳</span><span>Discando via PABX...</span>';
-  const phone=fmtPhonePABX(l.phone),ramal=cfg.ramal||201;
-  setPabxSt('dialing',`Discando ${phone}...`);
+  btn.disabled=true;
+  document.getElementById('btn-call-txt').textContent='Discando via PABX...';
+  setPabxSt('dialing');
+
+  const phone=fmtPABX(l.phone),ramal=cfg.ramal||201;
 
   try{
-    const result=await pabxDial(phone,ramal);
-    console.log('[PABX] dial →',result);
-    // Verifica erro na resposta
-    const isErr=result.status==='error'||result.erro||result.error||(result.raw&&typeof result.status==='number'&&result.status>=400);
-    if(isErr)throw new Error(result.message||result.mensagem||String(result.raw||'Erro desconhecido').slice(0,100));
-    // Sucesso
-    callState='calling';callStart=Date.now();l.attempts++;saveLeads();
-    setUI('calling');startTimer();startPabxPoll();renderQueue();
-    setPabxSt('calling',`Ramal ${ramal} → ${phone}`);
-    toast('✅ PABX: discando ramal '+ramal,'ok');
+    const res=await pabxDial(phone,ramal);
+    const isErr=res.status==='error'||res.erro||res.error;
+    if(isErr)throw new Error(res.message||res.mensagem||'Erro PABX');
+    setCallState('calling');
+    l.attempts++;LS.set('leads',JSON.stringify(leads));
+    setPabxSt('calling');
+    toast(`📞 Discando ramal ${ramal}...`,'ok');
   }catch(e){
-    console.error('[PABX] err:',e);
-    const isCors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError');
-    setPabxSt('err');
+    const cors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError');
     btn.disabled=false;
-    btn.innerHTML=`<span style="font-size:18px">📞</span><span>Ligar — <span id="cc-prev" style="font-family:var(--mono)">${fmtPhone(l.phone)}</span></span>`;
-    if(isCors){
-      document.getElementById('cors-banner').style.display='block';
-      toast('⚠ CORS: usando tel: como fallback','warn');
-      // Fallback silencioso para tel:
+    document.getElementById('btn-call-txt').textContent='Ligar — '+fmtPhone(l.phone);
+    setPabxSt('err');
+    if(cors){
+      // Fallback tel:
       const a=document.createElement('a');a.href='tel:'+phone;a.click();
-      callState='calling';callStart=Date.now();l.attempts++;saveLeads();
-      setUI('calling');startTimer();renderQueue();
-      setPabxSt('tel','Discagem tel: (fallback)');
+      setCallState('calling');l.attempts++;LS.set('leads',JSON.stringify(leads));
+      toast('⚠ Fallback tel: — PABX offline','warn');
     }else{
-      toast('❌ PABX: '+e.message.slice(0,80),'err');
+      toast('❌ PABX: '+e.message.slice(0,70),'err');
     }
   }
 }
 
-function endWithResult(label,cls,btn){
-  if(callState!=='calling')return;
-  selResult=label;
-  document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');
-  btn.className='result-btn '+cls;
-  finalizeCall(label);
+function setCallState(st){
+  callState=st;
+  const idle=document.getElementById('idle-section');
+  const rs=document.getElementById('result-section');
+  const csdot=document.getElementById('cs-dot');
+  const csinfo=document.getElementById('cs-info');
+
+  if(st==='idle'){
+    idle.style.display='block';rs.style.display='none';
+    stopTimer();
+    document.getElementById('timer-display').textContent='00:00';
+    csdot.className='cs-dot cs-calling';
+    csinfo.textContent='Aguardando ligação...';
+    const btn=document.getElementById('btn-call');
+    btn.disabled=false;
+    const l=leads[curIdx];
+    document.getElementById('btn-call-txt').textContent=l?'Ligar — '+fmtPhone(l.phone):'Ligar';
+  }else if(st==='calling'){
+    idle.style.display='none';rs.style.display='block';
+    callStart=Date.now();startTimer();
+    csdot.className='cs-dot cs-active';
+    csinfo.textContent='Em ligação — selecione o resultado';
+  }
 }
 
-function endNoResult(){
+// ══════════════════════════════════════════════════
+// END CALL
+// ══════════════════════════════════════════════════
+function endCall(result, btn){
   if(callState!=='calling')return;
-  selResult='';finalizeCall('');
-}
-
-function finalizeCall(label){
-  callState='ended';stopTimer();stopPabxPoll();
-  const dur=Math.floor((Date.now()-callStart)/1000);lastDur=dur;
-  const l=leads[curIdx];l.called=true;
-  if(label)updateStage(curIdx,label);saveLeads();
+  stopTimer();
+  const dur=Math.floor((Date.now()-callStart)/1000);
+  const l=leads[curIdx];
+  l.called=true;
+  l.stage=resultToStage(result);
+  l.lastResult=result;
+  l.lastDur=fmtTime(dur);
+  LS.set('leads',JSON.stringify(leads));
   sessCalls++;document.getElementById('ss-calls').textContent=sessCalls;
-  if(label==='Agendou'){sessSched++;document.getElementById('ss-sched').textContent=sessSched;}
-  hist.unshift({id:Date.now(),leadName:l.name,company:l.company||'',result:label||'—',duration:fmtTime(dur),time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
-  if(hist.length>100)hist.pop();LS.set('history',JSON.stringify(hist));
-  renderQueue();renderKanban();renderHist();
+  if(result==='Agendou'){sessSched++;document.getElementById('ss-sched').textContent=sessSched;}
   setPabxSt('ok');
-  // Reset call button for next lead
-  const nxt=leads[curIdx+1];const btn=document.getElementById('btn-call');
-  if(btn){btn.disabled=false;btn.innerHTML=`<span style="font-size:18px">📞</span><span>Ligar — <span id="cc-prev" style="font-family:var(--mono)">${nxt?fmtPhone(nxt.phone||''):'—'}</span></span>`;}
+  updateProgress();renderKanban();
 
-  if(powerDialer&&label){
-    startCountdown(label);
+  // Remarcar/Agendou → abre modal para data/hora
+  if(result==='Remarcar'||result==='Agendou'){
+    pendingResult=result;
+    openRemarcar(l,result);
   }else{
-    // Show ended state with result prompt if no result
-    document.getElementById('ended-res').textContent=label||'Não informado';
-    document.getElementById('ended-dur').textContent=fmtTime(dur);
-    document.getElementById('ended-result-area').style.display=!label?'block':'none';
-    setUI('ended');
+    doAutoAdvance(result);
   }
 }
 
-// Permite selecionar resultado no estado "ended"
-function setEndedResult(label,cls,btn){
-  selResult=label;
-  document.querySelectorAll('#ended-result-area .result-btn').forEach(b=>b.className='result-btn');
-  btn.className='result-btn '+cls;
-  document.getElementById('ended-res').textContent=label;
-  document.getElementById('ended-result-area').style.display='none';
-  updateStage(curIdx,label);saveLeads();renderKanban();
-  if(powerDialer){
-    setUI('idle');// esconde ended
-    startCountdown(label);
+function doAutoAdvance(result){
+  if(autoMode){
+    startCountdown(result);
+  }else{
+    setCallState('idle');
   }
 }
 
-function updateStage(idx,r){const l=leads[idx];if(!l)return;const m={'Agendou':'Reunião Agendada','Remarcar':'Remarcar Reunião','Contato Feito':'Contato Feito','Desqualificado':'Acompanhamento','Caixa Postal':'Entrar em Contato'};if(m[r])l.stage=m[r];else if(r==='Não Atendeu'&&l.stage==='Sem Contato/Lead')l.stage='Entrar em Contato';}
-function setUI(s){document.getElementById('cc-idle').style.display=s==='idle'?'flex':'none';document.getElementById('cc-calling').style.display=s==='calling'?'flex':'none';document.getElementById('cc-ended').style.display=s==='ended'?'flex':'none';}
+// ══════════════════════════════════════════════════
+// REMARCAR / AGENDAR
+// ══════════════════════════════════════════════════
+function openRemarcar(lead,result){
+  document.getElementById('remarcar-lead-name').textContent=lead.name+' — '+fmtPhone(lead.phone);
+  document.getElementById('rm-type').value=result==='Agendou'?'meeting':'callback';
+  // Default: próximo dia útil 9:00
+  const d=new Date();d.setDate(d.getDate()+1);
+  if(d.getDay()===0)d.setDate(d.getDate()+1);
+  if(d.getDay()===6)d.setDate(d.getDate()+2);
+  document.getElementById('rm-date').value=d.toISOString().slice(0,10);
+  document.getElementById('rm-time').value='09:00';
+  document.getElementById('rm-note').value='';
+  document.getElementById('remarcar-modal').classList.add('on');
+}
 
-// ══ COUNTDOWN ══
-function startCountdown(label){
+function saveRemarcar(){
+  const date=document.getElementById('rm-date').value;
+  const time=document.getElementById('rm-time').value;
+  const note=document.getElementById('rm-note').value.trim();
+  const type=document.getElementById('rm-type').value;
+  if(!date||!time){toast('Selecione data e hora','err');return;}
+  const l=leads[curIdx];
+  const entry={
+    id:'s'+Date.now(),leadId:l.id,leadName:l.name,
+    phone:l.phone,at:date+'T'+time,note,type,
+    dealId:l.dealId
+  };
+  scheduled.push(entry);
+  LS.set('scheduled',JSON.stringify(scheduled));
+  updateAgendaBadge();
+  renderAgenda();
+  closeRemarcar();
+  toast('📅 Agendado para '+fmtDate(entry.at),'ok');
+  doAutoAdvance(pendingResult||'Remarcar');
+  pendingResult=null;
+}
+
+function closeRemarcar(){
+  document.getElementById('remarcar-modal').classList.remove('on');
+  if(pendingResult){doAutoAdvance(pendingResult);pendingResult=null;}
+}
+
+function fmtDate(iso){
+  const d=new Date(iso);
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════════════════════
+// COUNTDOWN
+// ══════════════════════════════════════════════════
+const BADGE_STYLES={
+  'Agendou':'color:var(--green);border-color:var(--green);background:rgba(0,232,122,.1)',
+  'Não Agendou':'color:var(--yellow);border-color:var(--yellow);background:rgba(255,214,0,.07)',
+  'Remarcar':'color:var(--blue2);border-color:var(--blue2);background:rgba(77,147,255,.07)',
+  'Não Atendeu':'color:var(--text3);border-color:var(--border2);background:transparent'
+};
+
+function startCountdown(result){
   let count=cfg.delay||3;
   const ni=curIdx+1,nl=ni<leads.length?leads[ni]:null;
-  const badge=document.getElementById('cd-badge');badge.textContent=label;badge.style.cssText=BADGE_STYLES[label]||'color:var(--text2);border-color:var(--border2)';
+  const badge=document.getElementById('cd-result');
+  badge.textContent=result;badge.style.cssText=BADGE_STYLES[result]||'';
   document.getElementById('cd-num').textContent=count;
   document.getElementById('cd-next-name').textContent=nl?nl.name:'✅ Fim da fila';
-  document.getElementById('cd-next-co').textContent=nl?(nl.company||''):'Todos concluídos!';
+  document.getElementById('cd-next-phone').textContent=nl?fmtPhone(nl.phone||''):'';
   document.getElementById('cd-overlay').style.display='flex';
-  cdInt=setInterval(()=>{count--;document.getElementById('cd-num').textContent=count;if(count<=0){clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';autoNext();}},1000);
+  cdInt=setInterval(()=>{
+    count--;document.getElementById('cd-num').textContent=count;
+    if(count<=0){clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';advance();}
+  },1000);
 }
+
 function cancelCountdown(){
   clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';
-  document.getElementById('ended-res').textContent=selResult||'—';
-  document.getElementById('ended-dur').textContent=fmtTime(lastDur);
-  document.getElementById('ended-result-area').style.display=!selResult?'block':'none';
-  setUI('ended');
+  setCallState('idle');
 }
-function autoNext(){const ni=curIdx+1;if(ni<leads.length){callState='idle';selectLead(ni);setTimeout(()=>startCall(),500);}else{callState='idle';curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('🎉 Fila concluída! '+sessCalls+' lig · '+sessSched+' agend','ok');}}
 
-// ══ NAVIGATION ══
-function nextLead(){callState='idle';const ni=curIdx+1;if(ni<leads.length)selectLead(ni);else{curIdx=-1;document.getElementById('call-screen').style.display='none';document.getElementById('state-empty').style.display='flex';toast('✅ Fila concluída!','ok');}}
-function reCall(){callState='idle';setUI('idle');selResult='';document.querySelectorAll('.result-btn').forEach(b=>b.className='result-btn');}
-function skipLead(){if(callState==='calling'){toast('Encerre primeiro','err');return;}nextLead();toast('Lead pulado','ok');}
-function markNoPhone(){if(curIdx<0)return;leads[curIdx].notes='Sem telefone';saveLeads();nextLead();toast('Marcado sem telefone','ok');}
-function startAutoQueue(){const fi=leads.findIndex(l=>!l.called);if(fi<0){toast('Todos os leads foram contatados!','ok');return;}selectLead(fi);}
-function resetQueue(){if(!confirm('Resetar fila?'))return;leads.forEach(l=>{l.called=false;l.attempts=0;});saveLeads();renderQueue();renderKanban();toast('Fila resetada','ok');}
-function togglePD(){
-  powerDialer=!powerDialer;
+function advance(){
+  const ni=curIdx+1;
+  if(ni<leads.length){
+    loadLead(ni);
+  }else{
+    setCallState('idle');
+    document.getElementById('dialer-active').style.display='none';
+    document.getElementById('dialer-empty').style.display='block';
+    document.getElementById('empty-sub').textContent='🎉 Fila concluída! '+sessCalls+' ligações · '+sessSched+' agendamentos. Sincronize para novos leads.';
+    toast('🎉 Fila concluída!','ok');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// PAUSE
+// ══════════════════════════════════════════════════
+function doPause(type,icon,label){
+  if(callState==='calling'){toast('Encerre a ligação antes de pausar','err');return;}
+  clearInterval(cdInt);document.getElementById('cd-overlay').style.display='none';
+  callState='paused';pauseStart=Date.now();
+  document.getElementById('po-icon').textContent=icon;
+  document.getElementById('po-label').textContent=label;
+  document.getElementById('po-timer').textContent='00:00';
+  document.getElementById('pause-overlay').style.display='flex';
+  pauseInt=setInterval(()=>{
+    const s=Math.floor((Date.now()-pauseStart)/1000);
+    document.getElementById('po-timer').textContent=fmtTime(s);
+  },1000);
+  toast('Em pausa: '+label,'warn');
+}
+
+function resumeDialer(){
+  clearInterval(pauseInt);
+  document.getElementById('pause-overlay').style.display='none';
+  callState='idle';
+  if(curIdx>=0&&curIdx<leads.length&&autoMode)setTimeout(()=>dialCurrent(),500);
+  toast('▶ Discagem retomada','ok');
+}
+
+// ══════════════════════════════════════════════════
+// SKIP / NO PHONE
+// ══════════════════════════════════════════════════
+function skipLead(){
+  if(callState==='calling'){toast('Encerre a ligação primeiro','err');return;}
+  if(curIdx<0)return;
+  leads[curIdx].called=true;LS.set('leads',JSON.stringify(leads));
+  updateProgress();advance();toast('Lead pulado','ok');
+}
+
+function markNoPhone(){
+  if(curIdx<0)return;
+  leads[curIdx].called=true;leads[curIdx].notes='Sem telefone';
+  LS.set('leads',JSON.stringify(leads));
+  updateProgress();advance();toast('Sem telefone — próximo','ok');
+}
+
+function toggleAuto(){
+  autoMode=!autoMode;
   const pill=document.getElementById('auto-pill'),lbl=document.getElementById('auto-lbl');
-  if(powerDialer){pill.className='pill auto-on';lbl.textContent='⚡ AUTO';lbl.style.color='var(--green)';toast('⚡ Auto-avanço ativado','ok');}
+  if(autoMode){pill.className='pill pon';lbl.textContent='⚡ AUTO';lbl.style.color='var(--green)';toast('⚡ Auto-avanço ativado','ok');}
   else{pill.className='pill';lbl.textContent='⏸ MANUAL';lbl.style.color='var(--text3)';toast('Modo manual','ok');}
 }
 
-// ══ TIMER ══
-function startTimer(){timerInt=setInterval(()=>{document.getElementById('timer-display').textContent=fmtTime(Math.floor((Date.now()-callStart)/1000));},1000);}
+// ══════════════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════════════
+function startTimer(){
+  timerInt=setInterval(()=>{
+    document.getElementById('timer-display').textContent=fmtTime(Math.floor((Date.now()-callStart)/1000));
+  },1000);
+}
 function stopTimer(){clearInterval(timerInt);}
 function fmtTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-function startSessTimer(){sessInt=setInterval(()=>{document.getElementById('ss-time').textContent=fmtTime(Math.floor((Date.now()-sessStart)/1000));},1000);}
+function startSessTimer(){
+  sessInt=setInterval(()=>{document.getElementById('ss-time').textContent=fmtTime(Math.floor((Date.now()-sessStart)/1000));},1000);
+}
 
-// ══ KANBAN ══
-function renderKanban(){
-  const body=document.getElementById('ks-pipe');
-  document.getElementById('ks-sync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  body.innerHTML=STAGES.map(stage=>{
-    const sl=leads.filter(l=>l.stage===stage),c=STAGE_COLORS[stage]||'#7a94b0';
-    return`<div class="ks-stage" style="border-left-color:${c}">
-      <div class="ks-st-hdr"><span class="ks-st-name" style="color:${c}">${stage}</span><span class="ks-badge" style="background:${c}22;color:${c}">${sl.length}</span></div>
-      ${sl.length?`<div class="ks-cards">${sl.slice(0,6).map(l=>{const gi=leads.indexOf(l),act=gi===curIdx;return`<div class="ks-card" style="${act?'border-color:var(--green)':''}" onclick="selectLead(${gi})"><div class="ks-card-name">${l.name}</div><div class="ks-card-meta">${l.company||'—'} · ${l.attempts}x</div></div>`;}).join('')}${sl.length>6?`<div class="ks-more">+${sl.length-6}</div>`:''}</div>`:`<div class="ks-empty-st">Vazio</div>`}
+// ══════════════════════════════════════════════════
+// AGENDA
+// ══════════════════════════════════════════════════
+function renderAgenda(){
+  const list=document.getElementById('agenda-list');
+  const now=new Date();
+  document.getElementById('agenda-date-lbl').textContent=now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+
+  const sorted=[...scheduled].sort((a,b)=>new Date(a.at)-new Date(b.at));
+  if(!sorted.length){
+    list.innerHTML=`<div class="agenda-empty"><div class="agenda-empty-icon">📅</div><div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px">Nenhum retorno agendado</div><div style="font-size:12px;line-height:1.7">Quando você clicar em "Remarcar" ou "Agendou" durante uma ligação, o retorno aparecerá aqui com alerta automático no horário.</div></div>`;
+    return;
+  }
+
+  list.innerHTML=sorted.map(s=>{
+    const at=new Date(s.at);
+    const isPast=at<now;
+    const isDue=!isPast&&(at-now)<300000; // 5 min ahead
+    const timeStr=at.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const dateStr=at.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    return`<div class="sched-card${isDue?' due':''}" onclick="jumpToLead('${s.leadId}')">
+      <div class="sched-time${isPast?' past':isDue?' now':''}">
+        <div class="sched-time-val">${timeStr}</div>
+        <div class="sched-time-date">${dateStr}</div>
+      </div>
+      <div class="sched-info">
+        <div class="sched-name">${s.leadName}</div>
+        <div class="sched-phone">${fmtPhone(s.phone)}</div>
+        ${s.note?`<div class="sched-note">${s.note}</div>`:''}
+      </div>
+      <div class="sched-type ${s.type}">${s.type==='meeting'?'📅 Reunião':'📞 Retorno'}</div>
+      <button class="sched-del" onclick="event.stopPropagation();deleteScheduled('${s.id}')">✕</button>
     </div>`;
   }).join('');
 }
 
-function renderOnlineTab(calls){
-  const body=document.getElementById('ks-online');
-  if(!calls||!calls.length){body.innerHTML='<div style="font-size:11px;color:var(--text3);text-align:center;padding:24px">📡 Nenhuma chamada ativa.<br><span style="font-size:9px">Atualiza a cada 3s durante ligações.</span></div>';return;}
-  body.innerHTML=calls.map(c=>`<div class="live-call-item"><div class="lci-top"><span class="lci-ramal">Ramal ${c.ramal_origem||c.ramal||'—'}</span><span class="lci-dest">${c.numero_destino||c.destino||'—'}</span></div><div class="lci-meta">${c.status||c.situacao||'Em chamada'} ${c.duracao?'· '+c.duracao:''}</div></div>`).join('');
+function deleteScheduled(id){
+  scheduled=scheduled.filter(s=>s.id!==id);
+  LS.set('scheduled',JSON.stringify(scheduled));
+  updateAgendaBadge();renderAgenda();
 }
 
-function renderHist(){
-  const body=document.getElementById('ks-hist');
-  body.innerHTML=`<button class="load-pabx-btn" id="btn-pabx-hist" onclick="loadPabxHistorico()">📋 Carregar histórico PABX (hoje)</button>`;
-  if(!hist.length){body.innerHTML+='<div style="font-size:11px;color:var(--text3);text-align:center;padding:20px">Nenhuma ligação ainda</div>';return;}
-  body.innerHTML+=hist.slice(0,25).map(h=>{const c=RES_COLORS[h.result]||'var(--text3)';return`<div class="ks-hist${h.fromPabx?' pabx':''}"><div class="ks-hist-top"><span class="ks-hist-name">${h.leadName}</span><span class="ks-hist-result" style="color:${c}">${h.result}</span></div><div class="ks-hist-meta">${h.time} · ${h.duration}${h.company?' · '+h.company:''}</div>${h.fromPabx?'<div class="ks-hist-tag">PABX</div>':''}</div>`;}).join('');
+function updateAgendaBadge(){
+  const now=new Date();
+  const due=scheduled.filter(s=>new Date(s.at)>now).length;
+  const badge=document.getElementById('agenda-badge');
+  if(due>0){badge.textContent=due;badge.style.display='';}
+  else{badge.style.display='none';}
 }
 
-function setKsTab(tab,el){['pipe','online','hist'].forEach(t=>{document.getElementById('ks-'+t).style.display='none';});document.getElementById('ks-'+tab).style.display='block';document.querySelectorAll('.ks-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');if(tab==='online')renderOnlineTab(liveCalls);}
+function jumpToLead(leadId){
+  const idx=leads.findIndex(l=>l.id===leadId);
+  if(idx<0){toast('Lead não encontrado na fila','err');return;}
+  setTab('dialer',document.getElementById('tab-dialer'));
+  showDialerActive();loadLead(idx);
+}
 
-// ══ RD STATION ══
-async function syncRD(){if(!cfg.rdToken){toast('Configure o token do RD Station','err');openSettings();return;}toast('Sincronizando...','ok');try{const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'rd',payload:{endpoint:`deals?deal_pipeline_id=${cfg.pipeId}&limit=50`,method:'GET'},token:cfg.rdToken})});const data=await res.json();const deals=data.deals||[];if(!deals.length){toast('Nenhum deal encontrado','err');return;}leads=deals.map(d=>({id:d._id||d.id,name:d.contacts?.[0]?.name||d.name||'Lead',company:d.organization?.name||'',phone:d.contacts?.[0]?.phones?.[0]?.phone||'',stage:d.deal_stage?.name||'Sem Contato/Lead',attempts:0,called:false,dealId:d._id||d.id,notes:''}));saveLeads();renderQueue();renderKanban();toast(`✅ ${leads.length} leads sincronizados!`,'ok');}catch(e){toast('Erro: '+e.message,'err');}}
+// ══════════════════════════════════════════════════
+// SCHEDULED CALL ALERTS
+// ══════════════════════════════════════════════════
+function startAlertChecker(){
+  alertInt=setInterval(()=>{
+    const now=new Date();
+    const due=scheduled.find(s=>{
+      const at=new Date(s.at);
+      const diff=at-now;
+      return diff>=-60000&&diff<=0&&!s.alerted;
+    });
+    if(due){due.alerted=true;LS.set('scheduled',JSON.stringify(scheduled));showAlert(due);}
+  },30000); // check every 30s
+}
 
-// ══ SETTINGS ══
-function openSettings(){document.getElementById('cfg-name').value=cfg.name;document.getElementById('cfg-rd').value=cfg.rdToken;document.getElementById('cfg-pipe').value=cfg.pipeId;document.getElementById('cfg-delay').value=cfg.delay;document.getElementById('cfg-ramal').value=cfg.ramal;document.getElementById('cfg-proxy').value=cfg.proxy;document.getElementById('cfg-modal').classList.add('on');}
+function showAlert(s){
+  curAlert=s;
+  document.getElementById('ao-name').textContent=s.leadName;
+  document.getElementById('ao-phone').textContent=fmtPhone(s.phone);
+  document.getElementById('ao-note').textContent=s.note||'';
+  document.getElementById('alert-overlay').style.display='flex';
+  // Browser notification
+  if(Notification.permission==='granted'){
+    new Notification('⏰ Hora de ligar!',{body:s.leadName+' — '+fmtPhone(s.phone),icon:'/favicon.ico'});
+  }
+}
+
+function callFromAlert(){
+  document.getElementById('alert-overlay').style.display='none';
+  if(curAlert){
+    jumpToLead(curAlert.leadId);
+    setTimeout(()=>dialCurrent(),600);
+  }
+  curAlert=null;
+}
+
+function snoozeAlert(){
+  if(curAlert){
+    const newAt=new Date(Date.now()+300000).toISOString().slice(0,16);
+    const found=scheduled.find(s=>s.id===curAlert.id);
+    if(found){found.at=newAt;found.alerted=false;LS.set('scheduled',JSON.stringify(scheduled));}
+    toast('⏰ Lembrete em 5 minutos','warn');
+  }
+  document.getElementById('alert-overlay').style.display='none';curAlert=null;
+}
+
+function dismissAlert(){
+  document.getElementById('alert-overlay').style.display='none';curAlert=null;
+}
+
+// ══════════════════════════════════════════════════
+// KANBAN
+// ══════════════════════════════════════════════════
+function renderKanban(){
+  const board=document.getElementById('kanban-board');
+  document.getElementById('kanban-sync').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  board.innerHTML=STAGES.map(stage=>{
+    const sl=leads.filter(l=>l.stage===stage);
+    const c=STAGE_COLORS[stage]||'#7a94b0';
+    return`<div class="k-col">
+      <div class="k-col-header" style="border-color:${c}22;background:${c}0d">
+        <span class="k-col-title" style="color:${c}">${stage}</span>
+        <span class="k-count" style="background:${c}22;color:${c}">${sl.length}</span>
+      </div>
+      <div class="k-cards">
+        ${sl.length?sl.map(l=>{
+          const isActive=leads.indexOf(l)===curIdx;
+          return`<div class="k-card${isActive?' active-call':''}" onclick="jumpToLead('${l.id}')">
+            <div class="k-card-name">${l.name}</div>
+            <div class="k-card-meta">${l.company||'—'} · ${l.attempts}x</div>
+            ${l.lastResult?`<div class="k-card-note">${l.lastResult}${l.lastDur?' · '+l.lastDur:''}</div>`:''}
+          </div>`;
+        }).join(''):`<div class="k-empty">Vazio</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════
+function openSettings(){document.getElementById('cfg-name').value=cfg.name;document.getElementById('cfg-rd').value=cfg.rdToken;document.getElementById('cfg-pipe').value=cfg.pipeId;document.getElementById('cfg-delay').value=cfg.delay;document.getElementById('cfg-ramal').value=cfg.ramal;document.getElementById('cfg-proxy').value=cfg.proxy;document.getElementById('cfg-stages').value=cfg.stages;document.getElementById('cfg-modal').classList.add('on');}
 function closeCfg(){document.getElementById('cfg-modal').classList.remove('on');}
-function saveCfg(){cfg.name=document.getElementById('cfg-name').value;cfg.rdToken=document.getElementById('cfg-rd').value;cfg.pipeId=document.getElementById('cfg-pipe').value;cfg.delay=parseInt(document.getElementById('cfg-delay').value)||3;cfg.ramal=parseInt(document.getElementById('cfg-ramal').value)||201;cfg.proxy=document.getElementById('cfg-proxy').value.trim();LS.set('sdr_name',cfg.name);LS.set('rd_token',cfg.rdToken);LS.set('pipe_id',cfg.pipeId);LS.set('delay',cfg.delay);LS.set('ramal',cfg.ramal);LS.set('proxy',cfg.proxy);updateSDR();closeCfg();toast('✅ Salvo!','ok');}
-function updateSDR(){const n=cfg.name||'Configure o SDR';document.getElementById('sdr-nm').textContent=n;document.getElementById('sdr-av').textContent=n?n[0].toUpperCase():'?';}
+function saveCfg(){cfg.name=document.getElementById('cfg-name').value;cfg.rdToken=document.getElementById('cfg-rd').value;cfg.pipeId=document.getElementById('cfg-pipe').value;cfg.delay=parseInt(document.getElementById('cfg-delay').value)||3;cfg.ramal=parseInt(document.getElementById('cfg-ramal').value)||201;cfg.proxy=document.getElementById('cfg-proxy').value.trim();cfg.stages=document.getElementById('cfg-stages').value.trim();LS.set('sdr_name',cfg.name);LS.set('rd_token',cfg.rdToken);LS.set('pipe_id',cfg.pipeId);LS.set('delay',cfg.delay);LS.set('ramal',cfg.ramal);LS.set('proxy',cfg.proxy);LS.set('stages',cfg.stages);updateSDR();closeCfg();toast('✅ Salvo!','ok');}
+function updateSDR(){const n=cfg.name||'Configurar';document.getElementById('sdr-nm').textContent=n;document.getElementById('sdr-av').textContent=n?n[0].toUpperCase():'?';}
 
 // ADD LEAD
 function openAddLead(){document.getElementById('add-modal').classList.add('on');}
 function closeAdd(){document.getElementById('add-modal').classList.remove('on');}
-function addLead(){const name=document.getElementById('al-name').value.trim(),phone=document.getElementById('al-phone').value.trim();if(!name){toast('Informe o nome','err');return;}leads.push({id:'m'+Date.now(),name,phone,company:document.getElementById('al-co').value.trim(),stage:document.getElementById('al-stg').value,attempts:0,called:false,dealId:null,notes:''});saveLeads();renderQueue();renderKanban();closeAdd();toast('Lead adicionado!','ok');['al-name','al-phone','al-co'].forEach(i=>document.getElementById(i).value='');}
+function addLead(){
+  const name=document.getElementById('al-name').value.trim();
+  const phone=document.getElementById('al-phone').value.trim();
+  if(!name||!phone){toast('Informe nome e telefone','err');return;}
+  leads.push({id:'m'+Date.now(),name,phone,company:document.getElementById('al-co').value.trim(),stage:'Sem Contato',attempts:0,called:false,dealId:null});
+  LS.set('leads',JSON.stringify(leads));
+  showDialerActive();updateProgress();renderKanban();
+  closeAdd();toast('Lead adicionado!','ok');
+  ['al-name','al-phone','al-co'].forEach(i=>document.getElementById(i).value='');
+  if(curIdx<0)loadLead(leads.length-1);
+}
 
-function filterLeads(){renderQueue();}
-function setFilter(f,el){curFilter=f;document.querySelectorAll('.qf').forEach(q=>q.classList.remove('active'));el.classList.add('active');renderQueue();}
 function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' on';setTimeout(()=>t.classList.remove('on'),4000);}
 
-// ══ INIT ══
-window.onload=()=>{
-  loadDemo();updateSDR();renderQueue();renderKanban();renderHist();startSessTimer();
-  // PABX: auto-detect proxy e testa
-  const proxy=getPabxProxy();
-  if(proxy){
-    setTimeout(testPabx,1000); // testa só se tiver proxy (Vercel ou configurado)
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+window.onload=async()=>{
+  updateSDR();startSessTimer();startAlertChecker();updateAgendaBadge();
+  // Request notification permission
+  if(Notification.permission==='default')Notification.requestPermission();
+  // Test PABX silenciosamente
+  const proxy=getProxy();
+  if(proxy)testPabx();else setPabxSt('err');
+  // Auto-sync RD Station
+  if(cfg.rdToken&&cfg.pipeId){
+    await syncRD();
+  }else if(leads.length){
+    // Carrega do localStorage
+    showDialerActive();
+    if(!cfg.name)setTimeout(openSettings,500);
   }else{
-    // Rodando como file:// sem proxy configurado
-    setPabxSt('err');
-    document.getElementById('cors-banner').style.display='block';
+    if(!cfg.name)setTimeout(openSettings,500);
   }
-  if(!cfg.name)setTimeout(openSettings,600);
 };
 </script>
 </body>
